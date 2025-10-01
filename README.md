@@ -1,4 +1,4 @@
-#  Netflix Clone - 全端影音串流平台
+# Netflix Clone - 全端影音串流平台
 
 > 使用 **Next.js + TypeScript + Firebase + Stripe** 打造的 Netflix 風格影音串流平台，實現從 **用戶註冊 → 訂閱付費 → 影片瀏覽與收藏** 的完整流程。
 
@@ -7,50 +7,50 @@
 
 ---
 
-##  專案亮點速覽
+## 專案亮點速覽
 
-| 類別        | 亮點                                       | 程式依據                                                                  |
-| --------- | ---------------------------------------- | --------------------------------------------------------------------- |
-| **用戶系統**  | Firebase Auth 登入/註冊 + 30 分鐘自動登出          | `hooks/useAuth.tsx`                                                   |
-| **訂閱付費**  | Stripe Checkout + Firestore 訂閱同步         | `components/Plans.tsx`, `hooks/useSubscription.tsx`                   |
-| **影片功能**  | TMDB API 片單、隨機 Banner、Modal Trailer      | `components/Banner.tsx`, `components/Row.tsx`, `components/Modal.tsx` |
-| **收藏清單**  | Firestore 即時同步「我的清單」                     | `hooks/useList.tsx`                                                   |
-| **UI/UX** | Tailwind CSS + Recoil Modal，Netflix 風格互動 | `components/*`, `styles/globals.css`                                  |
+| 類別         | 亮點                                          | 程式依據                                                              |
+| ------------ | --------------------------------------------- | --------------------------------------------------------------------- |
+| **用戶系統** | Firebase Auth 登入/註冊 + 30 分鐘自動登出     | `hooks/useAuth.tsx`                                                   |
+| **訂閱付費** | Stripe Checkout + Firestore 訂閱同步          | `components/Plans.tsx`, `hooks/useSubscription.tsx`                   |
+| **影片功能** | TMDB API 片單、隨機 Banner、Modal Trailer     | `components/Banner.tsx`, `components/Row.tsx`, `components/Modal.tsx` |
+| **收藏清單** | Firestore 即時同步「我的清單」                | `hooks/useList.tsx`                                                   |
+| **UI/UX**    | Tailwind CSS + Recoil Modal，Netflix 風格互動 | `components/*`, `styles/globals.css`                                  |
 
 ---
 
-##  Demo / Screenshots
+## Demo / Screenshots
 
-* [線上 Demo](https://project-netflix-clone-two.vercel.app/login)
-* 專案截圖
-![專案截圖](https://github.com/user-attachments/assets/bda236ce-ad05-4714-a03d-b0c3f2279931)
+- [線上 Demo](https://project-netflix-clone-two.vercel.app/login)
+- 專案截圖
+  ![專案截圖](https://github.com/user-attachments/assets/bda236ce-ad05-4714-a03d-b0c3f2279931)
 
 ---
 
 ## 技術棧
 
-* **前端**：Next.js 13 (React 18)、TypeScript、Tailwind CSS、Recoil
-* **UI 元件**：Material-UI、Heroicons、React Hook Form
-* **後端服務**：Firebase Authentication、Firestore
-* **金流**：Stripe Checkout / Webhook
-* **外部 API**：TMDB (影片資訊)、YouTube (Trailer)
-* **部署**：Vercel
+- **前端**：Next.js 13 (React 18)、TypeScript、Tailwind CSS、Recoil
+- **UI 元件**：Material-UI、Heroicons、React Hook Form
+- **後端服務**：Firebase Authentication、Firestore
+- **金流**：Stripe Checkout / Webhook
+- **外部 API**：TMDB (影片資訊)、YouTube (Trailer)
+- **部署**：Vercel
 
 ---
 
 ## 功能介紹
 
-* **註冊/登入/自動登出** → Firebase Auth 實作
-* **多方案訂閱與付款** → Stripe Checkout
-* **影片分類瀏覽** → Row 橫向滑動
-* **首頁 Banner 推薦** → 隨機熱門影片
-* **我的清單 (My List)** → 收藏/移除影片
-* **影片詳情 Modal** → TMDB API + 預告片播放
-* **UI/UX** → Netflix 風格設計、響應式 Header、Loader 動畫
+- **註冊/登入/自動登出** → Firebase Auth 實作
+- **多方案訂閱與付款** → Stripe Checkout
+- **影片分類瀏覽** → Row 橫向滑動
+- **首頁 Banner 推薦** → 隨機熱門影片
+- **我的清單 (My List)** → 收藏/移除影片
+- **影片詳情 Modal** → TMDB API + 預告片播放
+- **UI/UX** → Netflix 風格設計、響應式 Header、Loader 動畫
 
 ---
 
-##  專案結構（精華版）
+## 專案結構（精華版）
 
 ```text
 pages/        # Next.js 路由與資料抓取，不放業務邏輯
@@ -61,11 +61,12 @@ atoms/        # Recoil 全域狀態，切小粒度，避免肥胖 atom
 
 ### 規範：
 
-* **UI 與資料解耦**：components/ 不直接呼叫 API
-* **副作用集中**：hooks/ 專責處理資料與 Firebase 監聽
-* **型別前置**：跨層共用型別統一放在 types/，避免 any 擴散
+- **UI 與資料解耦**：components/ 不直接呼叫 API
+- **副作用集中**：hooks/ 專責處理資料與 Firebase 監聽
+- **型別前置**：跨層共用型別統一放在 types/，避免 any 擴散
 
 --
+
 ## 環境變數
 
 `.env.local` 範例：
@@ -89,11 +90,11 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 
 ---
 
-##  安裝與啟動
+## 安裝與啟動
 
 ```bash
-git clone https://github.com/your-username/project-_netflix-clone.git
-cd project-_netflix-clone
+git clone https://github.com/your-username/netflix-clone-nextjs.git
+cd netflix-clone-nextjs
 npm install
 cp .env.example .env.local   # 填入金鑰
 npm run dev                  # http://localhost:3000
@@ -101,13 +102,15 @@ npm run build && npm run start
 ```
 
 ---
+
 ## 工程流程展示
 
-* **分支策略**：feat/*、fix/*、refactor/*
+- **分支策略**：feat/_、fix/_、refactor/\*
 
-* **Commit** 規範：Semantic Commit (feat, fix, chore, perf…)
+- **Commit** 規範：Semantic Commit (feat, fix, chore, perf…)
 
-* **PR 模板**：包含 Why / How / QA，並附 Before vs After 截圖
+- **PR 模板**：包含 Why / How / QA，並附 Before vs After 截圖
+
 ---
 
 ## FAQ
@@ -125,17 +128,15 @@ npm run build && npm run start
 
 ## 資安注意事項
 
-* Firebase Firestore 規則需限制用戶只能存取自己的文件
-* Stripe 開發建議使用「測試模式」
-* 建議為 TMDB API key 設定域名限制
+- Firebase Firestore 規則需限制用戶只能存取自己的文件
+- Stripe 開發建議使用「測試模式」
+- 建議為 TMDB API key 設定域名限制
 
 ---
 
-## 授權與致謝
+## 授權
 
-* 僅供作品展示
-* 影片資料來源：[TMDB API](https://www.themoviedb.org/documentation/api)
+- 僅供作品展示
+- 影片資料來源：[TMDB API](https://www.themoviedb.org/documentation/api)
 
 ---
-
-
