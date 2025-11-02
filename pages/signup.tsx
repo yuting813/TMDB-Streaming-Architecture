@@ -16,9 +16,9 @@ type Inputs = {
 	password: string;
 };
 
-function Login() {
+function Signup() {
 	const router = useRouter();
-	const { signIn, loading } = useAuth();
+	const { signUp, loading } = useAuth();
 	const [message, setMessage] = useState({ type: '', content: '' });
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,7 +28,6 @@ function Login() {
 		formState: { errors },
 	} = useForm<Inputs>();
 
-	// 統一的錯誤處理函數
 	const handleAuthError = (error: FirebaseAuthError) => {
 		switch (error.code) {
 			case 'auth/email-already-in-use':
@@ -51,10 +50,10 @@ function Login() {
 		setMessage({ type: '', content: '' });
 
 		try {
-			const result = await signIn(email, password);
+			const result = await signUp(email, password);
 			if (result.success) {
-				router.push('/');
-				setMessage({ type: 'success', content: '登入成功！即將跳轉...' });
+				setMessage({ type: 'success', content: '註冊成功！即將跳轉...' });
+				setTimeout(() => router.push('/'), 1500);
 			} else {
 				setMessage(handleAuthError({ code: result.error || '', message: '' }));
 			}
@@ -62,19 +61,19 @@ function Login() {
 			const firebaseError = error as FirebaseAuthError;
 			setMessage(handleAuthError(firebaseError));
 		} finally {
-			setIsSubmitting(false); // 確保在操作完成後重置狀態
+			setIsSubmitting(false);
 		}
 	};
 
 	return (
 		<div className='relative flex h-screen w-screen flex-col bg-black md:items-center md:justify-center md:bg-transparent'>
 			<Head>
-				<title>Netflixx</title>
+				<title>註冊 - Netflixx</title>
 				<link rel='icon' href='/logo.svg' />
 			</Head>
 			<Image
 				src='/loginImg.webp'
-				alt='Login page background image'
+				alt='Signup page background image'
 				className='-z-10 hidden brightness-[50%] sm:inline object-cover absolute inset-0 h-screen w-screen '
 				fill
 				sizes='100vw'
@@ -94,9 +93,10 @@ function Login() {
 
 			<form
 				onSubmit={handleSubmit(onSubmit)}
+				onClick={(e) => e.stopPropagation()}
 				className='relative mt-24 space-y-8 py-10 px-6 rounded bg-black/75 md:mt-0 md:max-w-md md:px-14'
 			>
-				<h1 className='text-4xl font-semibold '>登入</h1>
+				<h1 className='text-4xl font-semibold '>註冊</h1>
 				<div className='space-y-4'>
 					<label className='inline-block w-full'>
 						<input
@@ -104,9 +104,8 @@ function Login() {
 							placeholder='Email'
 							className='input'
 							{...register('email', {
-								required: '請輸入有效的電子郵件地址。', // 添加了自定義錯誤訊息
+								required: '請輸入有效的電子郵件地址。',
 								pattern: {
-									// 添加了 email 格式驗證
 									value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
 									message: '請輸入有效的電子郵件地址。',
 								},
@@ -158,27 +157,18 @@ function Login() {
 					{loading ? (
 						<Loader color='fill-white' />
 					) : (
-						<div className='flex items-center justify-center space-x-2'>登入</div>
+						<div className='flex items-center justify-center space-x-2'>註冊</div>
 					)}
 				</button>
 
-				<div className='mt-6 text-[gray] text-center'>
-					尚未加入Netflixx? {'  '}
+				<div className='text-[gray] text-center'>
+					已經有帳號? {'  '}
 					<button
 						type='button'
-						onClick={async (e) => {
-							e.preventDefault();
-							e.stopPropagation();
-							console.log('Navigating to signup...');
-							try {
-								await router.replace('/signup');
-							} catch (err) {
-								console.error('Navigation error:', err);
-							}
-						}}
-						className='text-white hover:underline inline-block ml-1'
+						onClick={() => router.push('/login')}
+						className='text-white hover:underline '
 					>
-						馬上註冊。
+						立即登入。
 					</button>
 				</div>
 			</form>
@@ -186,4 +176,4 @@ function Login() {
 	);
 }
 
-export default Login;
+export default Signup;

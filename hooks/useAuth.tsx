@@ -60,7 +60,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 					// Not logged in...
 					setUser(null);
 					try {
-						if (router.pathname !== '/login') {
+						// 允許訪問登入和註冊頁面
+						const publicPaths = ['/login', '/signup'];
+						if (!publicPaths.includes(router.pathname)) {
 							router.push('/login');
 						}
 					} catch (error) {
@@ -68,10 +70,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 					}
 				}
 
-				setInitialLoading(false);
-			}),
-		[auth, router],
-	);
+					setInitialLoading(false);
+				}),
+				[router],
+			);
 
 	useEffect(() => {
 		let logoutTimer: NodeJS.Timeout;
@@ -163,7 +165,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 			error,
 			resetError,
 		}),
-		[user, loading, error],
+		[user, loading, error, signIn, signUp],
 	);
 
 	return (
