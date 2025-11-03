@@ -1,9 +1,9 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import Loader from '@/components/Loader';
+import { useState } from 'react';
+import { SubmitHandler } from 'react-hook-form';
+import AuthForm from '@/components/AuthForm';
 import useAuth from '@/hooks/useAuth';
 
 interface FirebaseAuthError {
@@ -22,11 +22,7 @@ function Login() {
 	const [message, setMessage] = useState({ type: '', content: '' });
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<Inputs>();
+	// form is handled by shared AuthForm component
 
 	// 統一的錯誤處理函數
 	const handleAuthError = (error: FirebaseAuthError) => {
@@ -43,6 +39,11 @@ function Login() {
 				console.error('認證錯誤:', error);
 				return { type: 'error', content: '發生錯誤，請稍後再試' };
 		}
+	};
+
+	// adapter to pass to AuthForm (react-hook-form types -> simple function)
+	const handleAuthFormSubmit = async (data: Inputs) => {
+		await onSubmit(data);
 	};
 
 	const onSubmit: SubmitHandler<Inputs> = async ({ email, password }) => {
@@ -92,96 +93,27 @@ function Login() {
 				sizes='75px'
 			/>
 
-			<form
-				onSubmit={handleSubmit(onSubmit)}
-				className='relative mt-24 space-y-8 py-10 px-6 rounded bg-black/75 md:mt-0 md:max-w-md md:px-14'
-			>
-				<h1 className='text-4xl font-semibold '>登入</h1>
-				<div className='space-y-4'>
-					<label className='inline-block w-full'>
-						<input
-							type='email'
-							placeholder='Email'
-							className='input'
-							{...register('email', {
-								required: '請輸入有效的電子郵件地址。', // 添加了自定義錯誤訊息
-								pattern: {
-									// 添加了 email 格式驗證
-									value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-									message: '請輸入有效的電子郵件地址。',
-								},
-							})}
-						/>
+			<AuthForm mode='login' onSubmit={handleAuthFormSubmit} loading={loading} message={message} />
 
-						{errors.email && (
-							<p className='p-1 text-[13px] font-light text-orange-500'>{errors.email.message}</p>
-						)}
-					</label>
-					<label className='inline-block w-full'>
-						<input
-							type='password'
-							placeholder='Password'
-							className='input'
-							{...register('password', {
-								required: '您的密碼必須包含 4 至 60 個字元。',
-								minLength: { value: 6, message: '您的密碼必須包含 4 至 60 個字元。' },
-								maxLength: { value: 60, message: '您的密碼必須包含 4 至 60 個字元。' },
-							})}
-						/>
-						{errors.password && (
-							<p className='p-1 text-[13px] font-light text-orange-500  '>
-								{errors.password.message}
-							</p>
-						)}
-					</label>
-				</div>
-				{message.content && (
-					<div
-						className={`p-3 rounded text-center ${
-							message.type === 'success'
-								? 'bg-green-500/20 text-green-500'
-								: 'bg-red-500/20 text-red-500'
-						}`}
-					>
-						{message.content}
-					</div>
-				)}
-
+			<div className='mt-6 text-[gray] text-center'>
+				尚未加入Netflixx? {'  '}
 				<button
-					disabled={loading}
-					className={`w-full rounded py-3 font-semibold ${
-						loading || message.type === 'success'
-							? 'bg-[#e50914]/60'
-							: 'bg-[#e50914] hover:bg-[#e50914]/80'
-					}`}
+					type='button'
+					onClick={async (e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						console.log('Navigating to signup...');
+						try {
+							await router.replace('/signup');
+						} catch (err) {
+							console.error('Navigation error:', err);
+						}
+					}}
+					className='text-white hover:underline inline-block'
 				>
-					{loading ? (
-						<Loader color='fill-white' />
-					) : (
-						<div className='flex items-center justify-center space-x-2'>登入</div>
-					)}
+					馬上註冊。
 				</button>
-
-				<div className='mt-6 text-[gray] text-center'>
-					尚未加入Netflixx? {'  '}
-					<button
-						type='button'
-						onClick={async (e) => {
-							e.preventDefault();
-							e.stopPropagation();
-							console.log('Navigating to signup...');
-							try {
-								await router.replace('/signup');
-							} catch (err) {
-								console.error('Navigation error:', err);
-							}
-						}}
-						className='text-white hover:underline inline-block ml-1'
-					>
-						馬上註冊。
-					</button>
-				</div>
-			</form>
+			</div>
 		</div>
 	);
 }

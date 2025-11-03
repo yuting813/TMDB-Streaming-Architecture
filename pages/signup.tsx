@@ -1,9 +1,9 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import Loader from '@/components/Loader';
+import { useState } from 'react';
+import { SubmitHandler } from 'react-hook-form';
+import AuthForm from '@/components/AuthForm';
 import useAuth from '@/hooks/useAuth';
 
 interface FirebaseAuthError {
@@ -22,12 +22,7 @@ function Signup() {
 	const [message, setMessage] = useState({ type: '', content: '' });
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<Inputs>();
-
+	// form handled by shared AuthForm component
 	const handleAuthError = (error: FirebaseAuthError) => {
 		switch (error.code) {
 			case 'auth/email-already-in-use':
@@ -65,6 +60,10 @@ function Signup() {
 		}
 	};
 
+	const handleAuthFormSubmit = async (data: Inputs) => {
+		await onSubmit(data);
+	};
+
 	return (
 		<div className='relative flex h-screen w-screen flex-col bg-black md:items-center md:justify-center md:bg-transparent'>
 			<Head>
@@ -91,87 +90,18 @@ function Signup() {
 				sizes='75px'
 			/>
 
-			<form
-				onSubmit={handleSubmit(onSubmit)}
-				onClick={(e) => e.stopPropagation()}
-				className='relative mt-24 space-y-8 py-10 px-6 rounded bg-black/75 md:mt-0 md:max-w-md md:px-14'
-			>
-				<h1 className='text-4xl font-semibold '>註冊</h1>
-				<div className='space-y-4'>
-					<label className='inline-block w-full'>
-						<input
-							type='email'
-							placeholder='Email'
-							className='input'
-							{...register('email', {
-								required: '請輸入有效的電子郵件地址。',
-								pattern: {
-									value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-									message: '請輸入有效的電子郵件地址。',
-								},
-							})}
-						/>
+			<AuthForm mode='signup' onSubmit={handleAuthFormSubmit} loading={loading} message={message} />
 
-						{errors.email && (
-							<p className='p-1 text-[13px] font-light text-orange-500'>{errors.email.message}</p>
-						)}
-					</label>
-					<label className='inline-block w-full'>
-						<input
-							type='password'
-							placeholder='Password'
-							className='input'
-							{...register('password', {
-								required: '您的密碼必須包含 4 至 60 個字元。',
-								minLength: { value: 6, message: '您的密碼必須包含 4 至 60 個字元。' },
-								maxLength: { value: 60, message: '您的密碼必須包含 4 至 60 個字元。' },
-							})}
-						/>
-						{errors.password && (
-							<p className='p-1 text-[13px] font-light text-orange-500  '>
-								{errors.password.message}
-							</p>
-						)}
-					</label>
-				</div>
-				{message.content && (
-					<div
-						className={`p-3 rounded text-center ${
-							message.type === 'success'
-								? 'bg-green-500/20 text-green-500'
-								: 'bg-red-500/20 text-red-500'
-						}`}
-					>
-						{message.content}
-					</div>
-				)}
-
+			<div className='text-[gray] text-center'>
+				已經有帳號? {'  '}
 				<button
-					disabled={loading}
-					className={`w-full rounded py-3 font-semibold ${
-						loading || message.type === 'success'
-							? 'bg-[#e50914]/60'
-							: 'bg-[#e50914] hover:bg-[#e50914]/80'
-					}`}
+					type='button'
+					onClick={() => router.push('/login')}
+					className='text-white hover:underline'
 				>
-					{loading ? (
-						<Loader color='fill-white' />
-					) : (
-						<div className='flex items-center justify-center space-x-2'>註冊</div>
-					)}
+					立即登入。
 				</button>
-
-				<div className='text-[gray] text-center'>
-					已經有帳號? {'  '}
-					<button
-						type='button'
-						onClick={() => router.push('/login')}
-						className='text-white hover:underline '
-					>
-						立即登入。
-					</button>
-				</div>
-			</form>
+			</div>
 		</div>
 	);
 }
