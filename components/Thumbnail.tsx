@@ -10,6 +10,7 @@ interface Props {
 }
 
 function Thumbnail({ movie }: Props) {
+	// These state variables are used by parent/sibling components through Recoil
 	const [showModal, setShowModal] = useRecoilState(modalState);
 	const [currentMovie, setCurrentMovie] = useRecoilState(movieState);
 	const [imageError, setImageError] = useState(false);

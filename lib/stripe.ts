@@ -1,4 +1,5 @@
 import { getApp } from '@firebase/app';
+// Note: createCheckoutSession and getProducts are used dynamically in the application
 import {
 	createCheckoutSession,
 	getProducts,

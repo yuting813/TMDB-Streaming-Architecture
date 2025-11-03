@@ -14,7 +14,7 @@ import useAuth from '@/hooks/useAuth';
 import useList from '@/hooks/useList';
 import useSubscription from '@/hooks/useSubscription';
 import { modalState, movieState } from '@/atoms/modalAtom';
-import app, { db } from '@/firebase';
+import { db } from '@/firebase';
 import { Movie } from '@/typings';
 import requests from '@/utils/request';
 
