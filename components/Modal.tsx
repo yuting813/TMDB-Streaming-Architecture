@@ -14,7 +14,7 @@ import { Element, Genre, Movie } from '../typings';
 
 function Modal() {
 	const [showModal, setShowModal] = useRecoilState(modalState);
-	const [movie, setMovie] = useRecoilState(movieState);
+	const [movie] = useRecoilState(movieState);
 	const [trailer, setTrailer] = useState('');
 	const [genres, setGenres] = useState<Genre[]>([]);
 	const [muted, setMuted] = useState(true);

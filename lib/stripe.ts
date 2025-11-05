@@ -1,10 +1,6 @@
 import { getApp } from '@firebase/app';
 // Note: createCheckoutSession and getProducts are used dynamically in the application
-import {
-	createCheckoutSession,
-	getProducts,
-	getStripePayments,
-} from '@invertase/firestore-stripe-payments';
+import { getStripePayments } from '@invertase/firestore-stripe-payments';
 import { loadStripe } from '@stripe/stripe-js';
 
 // 初始化 Firebase app

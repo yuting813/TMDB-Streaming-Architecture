@@ -23,8 +23,8 @@ function Thumbnail({ movie, orientation = 'backdrop' }: Props) {
 			: movie.backdrop_path || movie.poster_path;
 	const containerClass =
 		orientation === 'poster'
-			? 'relative h-64 min-w-[150px] cursor-pointer transition-transform duration-200 ease-out md:h-80 md:min-w-[200px] md:hover:scale-105'
-			: 'relative h-28 min-w-[180px] cursor-pointer transition-transform duration-200 ease-out md:h-36 md:min-w-[260px] md:hover:scale-105';
+			? 'relative h-64 min-w-[150px] cursor-pointer transition-transform duration-200 ease-out md:h-80 md:min-w-[200px] md:hover:scale-105 rounded-xl overflow-hidden'
+			: 'relative h-28 min-w-[180px] cursor-pointer transition-transform duration-200 ease-out md:h-36 md:min-w-[260px] md:hover:scale-105 rounded-lg overflow-hidden';
 	return (
 		<div
 			className={containerClass}

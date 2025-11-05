@@ -13,9 +13,9 @@ interface Props {
 
 function Banner({ netflixOriginals }: Props) {
 	const [movie, setMovie] = useState<Movie | null>(null);
-	// These state variables are used by child components through Recoil
-	const [showModal, setShowModal] = useRecoilState(modalState);
-	const [currentMovie, setCurrentMovie] = useRecoilState(movieState);
+	// We only need the setters here; discard the first tuple item to avoid unused var lint
+	const [, setShowModal] = useRecoilState(modalState);
+	const [, setCurrentMovie] = useRecoilState(movieState);
 	const [isLoading, setIsLoading] = useState(true);
 	const [imageError, setImageError] = useState(false);
 

@@ -120,16 +120,16 @@ const Home = ({
 			<main className='relative pl-4 pb-24 space-y-24 lg:pl-16 '>
 				<Banner netflixOriginals={netflixOriginals} />
 
-				<section className='md:space-y-24'>
+				<section className='md:space-y-10'>
 					<Row title='Trending Now' movies={trendingNow} orientation='poster' />
+					<Row title='Comedies' movies={comedyMovies} orientation='poster' />
 					{/* My List */}
 					{list.length > 0 && <Row title='My List' movies={list} orientation='poster' />}
-					<Row title='Top Rated' movies={topRated} />
-					<Row title='Action Thrillers' movies={actionMovies} />
-					<Row title='Comedies' movies={comedyMovies} />
-					<Row title='Scary Movies' movies={horrorMovies} />
-					<Row title='Romance Movies' movies={romanceMovies} />
-					<Row title='Documentaries' movies={documentaries} />
+					<Row title='Top Rated' movies={topRated} orientation='poster' />
+					<Row title='Action Thrillers' movies={actionMovies} orientation='poster' />
+					<Row title='Romance Movies' movies={romanceMovies} orientation='poster' />
+					<Row title='Documentaries' movies={documentaries} orientation='poster' />
+					<Row title='Scary Movies' movies={horrorMovies} orientation='poster' />
 				</section>
 			</main>
 

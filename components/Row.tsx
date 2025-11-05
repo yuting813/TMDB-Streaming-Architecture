@@ -32,7 +32,7 @@ function Row({ title, movies, orientation = 'backdrop' }: Props) {
 
 	return (
 		<div className={containerClass}>
-			<h2 className='w-56 cursor-pointer text-sm font-semibold text-[#e5e5e5] transition duration-200 hover:text-white md:text-2xl '>
+			<h2 className='w-56 cursor-pointer text-sm font-semibold text-[#e5e5e5] transition duration-200 hover:text-white md:text-xl '>
 				{title}
 			</h2>
 			<div className='group relative md:-ml-2'>
@@ -44,7 +44,12 @@ function Row({ title, movies, orientation = 'backdrop' }: Props) {
 				/>
 				<div
 					ref={rowRef}
-					className='flex scrollbar-hide items-center space-x-0.5 overflow-x-scroll md:space-x-2.5 md:p-2'
+					className={
+						orientation === 'poster'
+							? 'flex scrollbar-hide items-center space-x-3 overflow-x-scroll md:space-x-5 md:p-3'
+							: 'flex scrollbar-hide items-center space-x-1 overflow-x-scroll md:space-x-3 md:p-2'
+					}
+					aria-label={`${title} row`}
 				>
 					{movies.map((movie) => (
 						<Thumbnail key={movie.id} movie={movie} orientation={orientation} />
