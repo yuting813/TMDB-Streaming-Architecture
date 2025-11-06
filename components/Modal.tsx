@@ -5,7 +5,7 @@ import { collection, deleteDoc, doc, DocumentData, onSnapshot, setDoc } from 'fi
 import { useRecoilState } from 'recoil';
 import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaPlay } from 'react-icons/fa';
+import { FaPause, FaPlay } from 'react-icons/fa';
 import ReactPlayer from 'react-player/lazy';
 import { modalState, movieState } from '../atoms/modalAtom';
 import { db } from '../firebase';
@@ -19,6 +19,10 @@ function Modal() {
 	const [genres, setGenres] = useState<Genre[]>([]);
 	const [muted, setMuted] = useState(true);
 	const [addedToList, setAddedToList] = useState(false);
+	// Local UX states for quick feedback
+	const [isPlayingBtn, setIsPlayingBtn] = useState(false);
+	const [playing, setPlaying] = useState(true);
+	const [liked, setLiked] = useState(false);
 	const { user } = useAuth();
 	const [movies, setMovies] = useState<DocumentData[] | Movie[]>([]);
 
@@ -123,6 +127,36 @@ function Modal() {
 		setShowModal(false);
 	};
 
+	// Quick UX handlers for Play and ThumbUp buttons
+	const handlePlayClick = () => {
+		if (!movie || !trailer) {
+			toast('Trailer not available', { duration: 3000, style: toastStyle });
+			return;
+		}
+
+		// Toggle play/pause
+		setPlaying((prev) => {
+			const next = !prev;
+			if (next) {
+				// Brief feedback when starting
+				setIsPlayingBtn(true);
+				setTimeout(() => setIsPlayingBtn(false), 1200);
+			}
+			return next;
+		});
+	};
+
+	const handleThumbUpClick = () => {
+		setLiked((prev) => {
+			const next = !prev;
+			toast(next ? 'Added to your likes' : 'Removed like', {
+				duration: 3000,
+				style: toastStyle,
+			});
+			return next;
+		});
+	};
+
 	return (
 		<MuiModal
 			open={showModal}
@@ -144,21 +178,70 @@ function Modal() {
 						width='100%'
 						height='100%'
 						style={{ position: 'absolute', top: '0', left: '0' }}
-						playing
+						playing={playing}
 						muted={muted}
+						onEnded={() => setPlaying(false)}
 					/>
 					<div className='absolute bottom-10 flex w-full items-center justify-between px-10'>
 						<div className='flex space-x-2'>
-							<button className='flex items-center gap-x-2 rounded bg-white px-8 text-xl font-bold text-black transition hover:bg-[#e6e6e6]'>
-								<FaPlay className='h-7 w-7 text-black' />
-								Play
+							<button
+								onClick={handlePlayClick}
+								aria-pressed={playing}
+								aria-label='Play trailer'
+								className={
+									'flex items-center gap-x-2 rounded px-8 text-xl font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
+									(isPlayingBtn
+										? 'bg-green-500 text-white transform scale-95'
+										: playing
+										? 'bg-green-600 text-white'
+										: 'bg-white text-black hover:bg-[#e6e6e6]')
+								}
+							>
+								{isPlayingBtn ? (
+									<>
+										<svg
+											className='h-6 w-6 animate-spin text-white'
+											viewBox='0 0 24 24'
+											fill='none'
+											xmlns='http://www.w3.org/2000/svg'
+										>
+											<circle
+												cx='12'
+												cy='12'
+												r='10'
+												stroke='currentColor'
+												strokeWidth='4'
+												strokeLinecap='round'
+												strokeLinejoin='round'
+											/>
+										</svg>
+										<span>Playing</span>
+									</>
+								) : playing ? (
+									<>
+										<FaPause className='h-7 w-7 text-white' />
+										<span>Pause</span>
+									</>
+								) : (
+									<>
+										<FaPlay className='h-7 w-7 text-black' />
+										<span>Play</span>
+									</>
+								)}
 							</button>
 
-							<button className='modalButton' onClick={handleList}>
+							<button className='modalButton' onClick={handleList} aria-label='Add to My List'>
 								{addedToList ? <CheckIcon className='h-7 w-7' /> : <PlusIcon className='h-7 w-7' />}
 							</button>
 
-							<button className='modalButton'>
+							<button
+								onClick={handleThumbUpClick}
+								aria-pressed={liked}
+								aria-label='Like'
+								className={
+									'modalButton transition-transform ' + (liked ? 'text-blue-400 scale-110' : '')
+								}
+							>
 								<ThumbUpIcon className='h-7 w-7' />
 							</button>
 						</div>
