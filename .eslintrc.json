@@ -4,14 +4,13 @@
 	"plugins": ["@typescript-eslint", "import"],
 	"extends": [
 		"next/core-web-vitals",
-		"plugin:prettier/recommended",
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:react/recommended",
 		"plugin:react-hooks/recommended",
 		"plugin:import/recommended",
 		"plugin:import/typescript",
-		"prettier"
+		"plugin:prettier/recommended" 
 	],
 	"rules": {
 		"import/order": "off", // 禁用 ESLint 的 import 排序，改用 Prettier 處理
@@ -22,6 +21,8 @@
 		"react/prop-types": "off"
 	},
 	"settings": {
-		"react": { "version": "detect" }
+		"react": {
+			"version": "detect"
+		}
 	}
 }

@@ -5,7 +5,7 @@
 	"jsxSingleQuote": true,
 	"trailingComma": "all",
 	"endOfLine": "auto",
-	"plugins": ["@ianvs/prettier-plugin-sort-imports"],
+	"plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
 	"importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
 	"importOrder": ["^react", "^@/components/(.*)$", "^@/hooks/(.*)$", "^@/(.*)$", "^[./]"]
 }
