@@ -34,7 +34,7 @@ function Header() {
 	}, []);
 
 	return (
-		<header className={`${isScrolled && 'bg-[#141414]'}`}>
+		<header className={`${isScrolled ? 'bg-[#141414]' : 'bg-black/10'}`}>
 			<div className='flex items-center space-x-2 md:space-x-6'>
 				<Link href='/' aria-label='Go to homepage'>
 					<Image

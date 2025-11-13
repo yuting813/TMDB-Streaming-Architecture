@@ -196,9 +196,9 @@ function Modal() {
 								className={
 									'flex items-center gap-x-2 rounded px-8 text-xl font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
 									(isPlayingBtn
-										? 'scale-95 transform bg-green-500 text-white'
+										? 'scale-95 transform bg-green-500 text-white hover:bg-green-600'
 										: playing
-											? 'bg-green-600 text-white'
+											? 'bg-green-600 text-white hover:bg-green-700'
 											: 'bg-white text-black hover:bg-[#e6e6e6]')
 								}
 							>
