@@ -39,6 +39,11 @@ function Modal() {
 	useEffect(() => {
 		if (!movie) return;
 
+		console.log('Modal: movie changed, fetching details for', {
+			id: movie.id,
+			media_type: movie.media_type,
+		});
+
 		async function fetchMovie() {
 			const data = await fetch(
 				`https://api.themoviedb.org/3/${movie?.media_type === 'tv' ? 'tv' : 'movie'}/${
@@ -191,10 +196,10 @@ function Modal() {
 								className={
 									'flex items-center gap-x-2 rounded px-8 text-xl font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
 									(isPlayingBtn
-										? 'bg-green-500 text-white transform scale-95'
+										? 'scale-95 transform bg-green-500 text-white'
 										: playing
-										? 'bg-green-600 text-white'
-										: 'bg-white text-black hover:bg-[#e6e6e6]')
+											? 'bg-green-600 text-white'
+											: 'bg-white text-black hover:bg-[#e6e6e6]')
 								}
 							>
 								{isPlayingBtn ? (
@@ -239,7 +244,7 @@ function Modal() {
 								aria-pressed={liked}
 								aria-label='Like'
 								className={
-									'modalButton transition-transform ' + (liked ? 'text-blue-400 scale-110' : '')
+									'modalButton transition-transform ' + (liked ? 'scale-110 text-blue-400' : '')
 								}
 							>
 								<ThumbUpIcon className='h-7 w-7' />

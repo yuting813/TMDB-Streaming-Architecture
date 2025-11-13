@@ -140,7 +140,7 @@ const Home = ({
 
 export default Home;
 
-export const getServerSideProps = async () => {
+export const getStaticProps = async () => {
 	try {
 		//  Firestore 產品獲取邏輯
 		const productsCollection = collection(db, 'products');
@@ -200,6 +200,7 @@ export const getServerSideProps = async () => {
 				documentaries: documentaries.results,
 				products: productsWithPricing, // 使用從 Firestore 取得的產品資料
 			},
+			revalidate: 3600, // ISR: revalidate every 1 hour (3600 seconds)
 		};
 	} catch (error) {
 		console.error('Error fetching data:', error);
@@ -215,6 +216,7 @@ export const getServerSideProps = async () => {
 				documentaries: [],
 				products: [],
 			},
+			revalidate: 60, // Retry after 60 seconds on error
 		};
 	}
 };

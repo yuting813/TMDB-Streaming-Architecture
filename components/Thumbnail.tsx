@@ -8,9 +8,11 @@ import { Movie } from '@/typings';
 interface Props {
 	movie: Movie | DocumentData;
 	orientation?: 'backdrop' | 'poster';
+	// when true, make poster thumbnails taller on large screens (used by search page)
+	tallOnLarge?: boolean;
 }
 
-function Thumbnail({ movie, orientation = 'backdrop' }: Props) {
+function Thumbnail({ movie, orientation = 'backdrop', tallOnLarge = false }: Props) {
 	// These state variables are used by parent/sibling components through Recoil
 	// we only need the setters here; discard the first element to avoid unused var lint
 	const [, setShowModal] = useRecoilState(modalState);
@@ -23,12 +25,15 @@ function Thumbnail({ movie, orientation = 'backdrop' }: Props) {
 			: movie.backdrop_path || movie.poster_path;
 	const containerClass =
 		orientation === 'poster'
-			? 'relative h-64 min-w-[150px] cursor-pointer transition-transform duration-200 ease-out md:h-80 md:min-w-[200px] md:hover:scale-105 rounded-xl overflow-hidden'
+			? `relative h-64 min-w-[150px] cursor-pointer transition-transform duration-200 ease-out md:h-80 md:min-w-[220px] ${
+					tallOnLarge ? 'md:h-[28rem] md:min-w-[220px]' : ''
+				} md:hover:scale-105 rounded-xl overflow-hidden`
 			: 'relative h-28 min-w-[180px] cursor-pointer transition-transform duration-200 ease-out md:h-36 md:min-w-[260px] md:hover:scale-105 rounded-lg overflow-hidden';
 	return (
 		<div
 			className={containerClass}
 			onClick={() => {
+				console.log('Thumbnail clicked', { id: movie.id, media_type: (movie as any).media_type });
 				setCurrentMovie(movie);
 				setShowModal(true);
 			}}
