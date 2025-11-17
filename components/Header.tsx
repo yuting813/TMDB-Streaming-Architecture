@@ -55,11 +55,6 @@ function Header() {
 						</a>
 					</li>
 					<li>
-						<a className='headerLink' href='/tv'>
-							TV Shows
-						</a>
-					</li>
-					<li>
 						<a className='headerLink' href='/movies'>
 							Movies
 						</a>
@@ -69,6 +64,11 @@ function Header() {
 							New & Popular
 						</a>
 					</li>
+					{/* <li>
+						<a className='headerLink' href='/new'>
+							TV Shows
+						</a>
+					</li> */}
 					<li>
 						<a className='headerLink' href='/mylist'>
 							My List

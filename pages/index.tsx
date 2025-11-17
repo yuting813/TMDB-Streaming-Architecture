@@ -93,11 +93,11 @@ const Home = ({
 	if (subscriptionError) {
 		return (
 			<div className='flex h-screen items-center justify-center bg-black'>
-				<div className='text-white text-center'>
-					<p className='text-red-500 mb-4'>{subscriptionError}</p>
+				<div className='text-center text-white'>
+					<p className='mb-4 text-red-500'>{subscriptionError}</p>
 					<button
 						onClick={() => window.location.reload()}
-						className='bg-[#e50914] px-4 py-2 rounded'
+						className='rounded bg-[#e50914] px-4 py-2'
 					>
 						重新載入
 					</button>
@@ -109,7 +109,7 @@ const Home = ({
 	if (!subscription) return <Plans products={products} />;
 
 	return (
-		<div className='relative bg-[linear-gradient(to_bottom,rgba(20,20,20,0)_0%,rgba(20,20,20,0.15)_15%,rgba(20,20,20,0.35)_29%,rgba(20,20,20,0.58)_44%,#141414_58%,#141414_100%)] rounded lg:h-[160vh] '>
+		<div className='relative rounded bg-[linear-gradient(to_bottom,rgba(20,20,20,0)_0%,rgba(20,20,20,0.15)_15%,rgba(20,20,20,0.35)_29%,rgba(20,20,20,0.58)_44%,#141414_58%,#141414_100%)] lg:h-[160vh]'>
 			<Head>
 				<title>Home - Netflixx</title>
 				<link rel='icon' href='/logo.svg' type='image/svg+xml' />
@@ -117,7 +117,7 @@ const Home = ({
 			</Head>
 
 			<Header />
-			<main className='relative pl-4 pb-24 space-y-24 lg:pl-16 '>
+			<main className='relative space-y-24 pb-24 pl-4 lg:pl-16'>
 				<Banner netflixOriginals={netflixOriginals} />
 
 				<section className='md:space-y-10'>
