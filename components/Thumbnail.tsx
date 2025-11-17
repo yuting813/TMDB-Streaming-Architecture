@@ -33,7 +33,9 @@ function Thumbnail({ movie, orientation = 'backdrop', tallOnLarge = false }: Pro
 		<div
 			className={containerClass}
 			onClick={() => {
-				console.log('Thumbnail clicked', { id: movie.id, media_type: (movie as any).media_type });
+				if (process.env.NODE_ENV !== 'production') {
+					console.log('Thumbnail clicked', { id: movie.id, media_type: (movie as any).media_type });
+				}
 				setCurrentMovie(movie);
 				setShowModal(true);
 			}}

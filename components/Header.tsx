@@ -64,11 +64,7 @@ function Header() {
 							New & Popular
 						</a>
 					</li>
-					{/* <li>
-						<a className='headerLink' href='/new'>
-							TV Shows
-						</a>
-					</li> */}
+
 					<li>
 						<a className='headerLink' href='/mylist'>
 							My List
@@ -95,7 +91,9 @@ function Header() {
 					aria-label='Notifications'
 					className='iconButton relative'
 					onClick={() => {
-						console.log('Notifications clicked');
+						if (process.env.NODE_ENV !== 'production') {
+							console.log('Notifications clicked');
+						}
 					}}
 					title='View notifications'
 				>

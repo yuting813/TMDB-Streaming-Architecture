@@ -165,7 +165,9 @@ export const getStaticProps = async () => {
 			}),
 		);
 
-		console.log('productsFromFirestore:', productsWithPricing);
+		if (process.env.NODE_ENV !== 'production') {
+			console.log('productsFromFirestore:', productsWithPricing);
+		}
 
 		// 獲取電影數據
 		const [

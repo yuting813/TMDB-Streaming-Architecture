@@ -39,10 +39,12 @@ function Modal() {
 	useEffect(() => {
 		if (!movie) return;
 
-		console.log('Modal: movie changed, fetching details for', {
-			id: movie.id,
-			media_type: movie.media_type,
-		});
+		if (process.env.NODE_ENV !== 'production') {
+			console.log('Modal: movie changed, fetching details for', {
+				id: movie.id,
+				media_type: movie.media_type,
+			});
+		}
 
 		async function fetchMovie() {
 			const data = await fetch(
