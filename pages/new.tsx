@@ -17,7 +17,6 @@ export default function NewPage({ netflixOriginals, trending }: Props) {
 			</Head>
 			<Header />
 			<main className='m-10 px-4 pt-24'>
-				<h1 className='mb-10 text-3xl font-bold'>New & Popular</h1>
 				<section className='space-y-8'>
 					<Row title='New & Popular' movies={netflixOriginals} orientation='poster' />
 					<Row title='Trending Now' movies={trending} orientation='poster' />
