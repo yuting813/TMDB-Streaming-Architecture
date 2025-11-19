@@ -18,6 +18,7 @@ function Thumbnail({ movie, orientation = 'backdrop', tallOnLarge = false }: Pro
 	const [, setShowModal] = useRecoilState(modalState);
 	const [, setCurrentMovie] = useRecoilState(movieState);
 	const [imageError, setImageError] = useState(false);
+	const [isLoaded, setIsLoaded] = useState(false);
 	// choose poster for portrait, otherwise backdrop
 	const imagePath =
 		orientation === 'poster'
@@ -40,6 +41,10 @@ function Thumbnail({ movie, orientation = 'backdrop', tallOnLarge = false }: Pro
 				setShowModal(true);
 			}}
 		>
+			{/* Skeleton while image loads */}
+			{!isLoaded && !imageError && (
+				<div className='absolute inset-0 animate-pulse bg-gradient-to-r from-gray-700 via-gray-600 to-gray-700' />
+			)}
 			<Image
 				src={
 					imageError || !imagePath
@@ -47,18 +52,26 @@ function Thumbnail({ movie, orientation = 'backdrop', tallOnLarge = false }: Pro
 						: `https://image.tmdb.org/t/p/w500${imagePath}`
 				}
 				alt={movie.title || movie.name || 'Movie poster'}
-				className='rounded-sm object-cover md:rounded'
+				className={`rounded-sm object-cover transition-opacity duration-300 md:rounded ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
 				fill={true}
 				sizes={
 					orientation === 'poster'
 						? '(max-width: 768px) 40vw, (max-width: 1200px) 20vw, 12vw'
 						: '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
 				}
+				onLoadingComplete={() => setIsLoaded(true)}
 				onError={() => {
 					console.error(`Failed to load image for movie: ${movie.title || movie.name}`, imagePath);
 					setImageError(true);
+					setIsLoaded(true);
 				}}
 			/>
+			{/* Error overlay */}
+			{imageError && (
+				<div className='absolute inset-0 flex items-center justify-center bg-black/60 p-2 text-center'>
+					<span className='text-sm text-gray-300'>Image unavailable</span>
+				</div>
+			)}
 		</div>
 	);
 }

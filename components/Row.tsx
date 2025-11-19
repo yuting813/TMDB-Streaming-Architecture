@@ -32,12 +32,12 @@ function Row({ title, movies, orientation = 'backdrop' }: Props) {
 
 	return (
 		<div className={containerClass}>
-			<h2 className='w-56 cursor-pointer text-sm font-semibold text-[#e5e5e5] transition duration-200 hover:text-white md:text-xl '>
+			<h2 className='w-56 cursor-pointer text-sm font-semibold text-[#e5e5e5] transition duration-200 hover:text-white md:text-xl'>
 				{title}
 			</h2>
 			<div className='group relative md:-ml-2'>
 				<ChevronLeftIcon
-					className={`absolute top-0 bottom-0 left-2 z-40 m-auto h-9 w-9 cursor-pointer opacity-0 transition hover:scale-125 group-hover:opacity-100 ${
+					className={`absolute bottom-0 left-2 top-0 z-40 m-auto h-9 w-9 cursor-pointer opacity-0 transition group-hover:opacity-100 hover:scale-125 ${
 						!isMoved && 'hidden'
 					}`}
 					onClick={() => handleClick('left')}
@@ -46,17 +46,27 @@ function Row({ title, movies, orientation = 'backdrop' }: Props) {
 					ref={rowRef}
 					className={
 						orientation === 'poster'
-							? 'flex scrollbar-hide items-center space-x-3 overflow-x-scroll md:space-x-5 md:p-3'
-							: 'flex scrollbar-hide items-center space-x-1 overflow-x-scroll md:space-x-3 md:p-2'
+							? 'flex items-center space-x-3 overflow-x-scroll scrollbar-hide md:space-x-5 md:p-3'
+							: 'flex items-center space-x-1 overflow-x-scroll scrollbar-hide md:space-x-3 md:p-2'
 					}
 					aria-label={`${title} row`}
 				>
-					{movies.map((movie) => (
-						<Thumbnail key={movie.id} movie={movie} orientation={orientation} />
-					))}
+					{movies && movies.length > 0
+						? movies.map((movie) => (
+								<Thumbnail key={movie.id} movie={movie} orientation={orientation} />
+							))
+						: // Show simple skeleton placeholders when there are no movies or data is loading/error
+							Array.from({ length: 6 }).map((_, i) => (
+								<div
+									key={`skeleton-${i}`}
+									className='relative h-40 min-w-[150px] overflow-hidden rounded-lg md:h-64 md:min-w-[220px]'
+								>
+									<div className='absolute inset-0 animate-pulse bg-gradient-to-r from-gray-700 via-gray-600 to-gray-700' />
+								</div>
+							))}
 				</div>
 				<ChevronRightIcon
-					className='absolute top-0 bottom-0 right-2 z-40 m-auto h-9 w-9 cursor-pointer opacity-0 transition hover:scale-125 group-hover:opacity-100'
+					className='absolute bottom-0 right-2 top-0 z-40 m-auto h-9 w-9 cursor-pointer opacity-0 transition group-hover:opacity-100 hover:scale-125'
 					onClick={() => handleClick('right')}
 				/>
 			</div>

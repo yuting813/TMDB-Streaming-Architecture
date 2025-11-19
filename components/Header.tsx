@@ -3,6 +3,7 @@ import { BellIcon, SearchIcon } from '@heroicons/react/solid';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import useAuth from '@/hooks/useAuth';
 import useSubscription from '@/hooks/useSubscription';
@@ -12,6 +13,7 @@ import BasicMenu from './BasicMenu';
 const SearchModal = dynamic(() => import('./SearchModal'), { ssr: false });
 
 function Header() {
+	const router = useRouter();
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [hasNotifications, setHasNotifications] = useState(true);
 	const [showAccountMenu, setShowAccountMenu] = useState(false);
@@ -50,25 +52,41 @@ function Header() {
 
 				<ul className='hidden space-x-4 md:flex'>
 					<li>
-						<a className='headerLink' href='/'>
+						<Link
+							href='/'
+							className={`headerLink ${router.pathname === '/' ? 'headerLinkActive' : ''}`}
+							aria-current={router.pathname === '/' ? 'page' : undefined}
+						>
 							Home
-						</a>
+						</Link>
 					</li>
 					<li>
-						<a className='headerLink' href='/movies'>
+						<Link
+							href='/movies'
+							className={`headerLink ${router.pathname === '/movies' ? 'headerLinkActive' : ''}`}
+							aria-current={router.pathname === '/movies' ? 'page' : undefined}
+						>
 							Movies
-						</a>
+						</Link>
 					</li>
 					<li>
-						<a className='headerLink' href='/new'>
+						<Link
+							href='/new'
+							className={`headerLink ${router.pathname === '/new' ? 'headerLinkActive' : ''}`}
+							aria-current={router.pathname === '/new' ? 'page' : undefined}
+						>
 							New & Popular
-						</a>
+						</Link>
 					</li>
 
 					<li>
-						<a className='headerLink' href='/mylist'>
+						<Link
+							href='/mylist'
+							className={`headerLink ${router.pathname === '/mylist' ? 'headerLinkActive' : ''}`}
+							aria-current={router.pathname === '/mylist' ? 'page' : undefined}
+						>
 							My List
-						</a>
+						</Link>
 					</li>
 				</ul>
 			</div>
