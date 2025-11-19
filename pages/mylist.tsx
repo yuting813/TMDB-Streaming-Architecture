@@ -24,7 +24,7 @@ export default function MyListPage() {
 			</Head>
 			<Header />
 			<main className='m-10 px-4 pt-24'>
-				<h1 className='mb-6 text-3xl font-bold'>My List</h1>
+				<p className='mb-1 ml-1 text-xl font-bold'>My List</p>
 				{list.length === 0 ? (
 					<p className='text-gray-400'>
 						Your list is empty. Add movies to your list to see them here.
