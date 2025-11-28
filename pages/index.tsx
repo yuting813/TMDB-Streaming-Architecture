@@ -16,7 +16,7 @@ import useSubscription from '@/hooks/useSubscription';
 import { modalState } from '@/atoms/modalAtom';
 import { db } from '@/firebase';
 import { Movie } from '@/typings';
-import requests from '@/utils/request';
+import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
 
 interface Props {
 	netflixOriginals: Movie[];
@@ -171,38 +171,38 @@ export const getStaticProps = async () => {
 
 		// 獲取電影數據
 		const [
-			netflixOriginals,
-			trendingNow,
-			topRated,
-			actionMovies,
-			comedyMovies,
-			horrorMovies,
-			romanceMovies,
-			documentaries,
+			netflixOriginalsRes,
+			trendingNowRes,
+			topRatedRes,
+			actionMoviesRes,
+			comedyMoviesRes,
+			horrorMoviesRes,
+			romanceMoviesRes,
+			documentariesRes,
 		] = await Promise.all([
-			fetch(requests.fetchNetflixOriginals).then((res) => res.json()),
-			fetch(requests.fetchTrending).then((res) => res.json()),
-			fetch(requests.fetchTopRated).then((res) => res.json()),
-			fetch(requests.fetchActionMovies).then((res) => res.json()),
-			fetch(requests.fetchComedyMovies).then((res) => res.json()),
-			fetch(requests.fetchHorrorMovies).then((res) => res.json()),
-			fetch(requests.fetchRomanceMovies).then((res) => res.json()),
-			fetch(requests.fetchDocumentaries).then((res) => res.json()),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchNetflixOriginals, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchTrending, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchTopRated, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchActionMovies, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchComedyMovies, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchHorrorMovies, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchRomanceMovies, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchDocumentaries, { params: { language: 'en-US' } }),
 		]);
 
 		return {
 			props: {
-				netflixOriginals: netflixOriginals.results,
-				trendingNow: trendingNow.results,
-				topRated: topRated.results,
-				actionMovies: actionMovies.results,
-				comedyMovies: comedyMovies.results,
-				horrorMovies: horrorMovies.results,
-				romanceMovies: romanceMovies.results,
-				documentaries: documentaries.results,
-				products: productsWithPricing, // 使用從 Firestore 取得的產品資料
+				netflixOriginals: netflixOriginalsRes?.results ?? [],
+				trendingNow: trendingNowRes?.results ?? [],
+				topRated: topRatedRes?.results ?? [],
+				actionMovies: actionMoviesRes?.results ?? [],
+				comedyMovies: comedyMoviesRes?.results ?? [],
+				horrorMovies: horrorMoviesRes?.results ?? [],
+				romanceMovies: romanceMoviesRes?.results ?? [],
+				documentaries: documentariesRes?.results ?? [],
+				products: productsWithPricing,
 			},
-			revalidate: 3600, // ISR: revalidate every 1 hour (3600 seconds)
+			revalidate: 3600,
 		};
 	} catch (error) {
 		console.error('Error fetching data:', error);

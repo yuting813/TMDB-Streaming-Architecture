@@ -2,7 +2,7 @@ import Head from 'next/head';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import Row from '@/components/Row';
-import requests from '@/utils/request';
+import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
 
 interface Props {
 	topRated: any[];
@@ -32,16 +32,16 @@ export default function MoviesPage({ topRated, action, comedy }: Props) {
 export async function getStaticProps() {
 	try {
 		const [topRatedRes, actionRes, comedyRes] = await Promise.all([
-			fetch(requests.fetchTopRated).then((r) => r.json()),
-			fetch(requests.fetchActionMovies).then((r) => r.json()),
-			fetch(requests.fetchComedyMovies).then((r) => r.json()),
+			tmdbFetch<TmdbResponse<any>>(requests.fetchTopRated, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<any>>(requests.fetchActionMovies, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<any>>(requests.fetchComedyMovies, { params: { language: 'en-US' } }),
 		]);
 
 		return {
 			props: {
-				topRated: topRatedRes.results || [],
-				action: actionRes.results || [],
-				comedy: comedyRes.results || [],
+				topRated: topRatedRes?.results ?? [],
+				action: actionRes?.results ?? [],
+				comedy: comedyRes?.results ?? [],
 			},
 			revalidate: 3600,
 		};

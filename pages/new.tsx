@@ -2,7 +2,7 @@ import Head from 'next/head';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import Row from '@/components/Row';
-import requests from '@/utils/request';
+import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
 
 interface Props {
 	netflixOriginals: any[];
@@ -29,18 +29,15 @@ export default function NewPage({ netflixOriginals, trending }: Props) {
 
 export async function getStaticProps() {
 	try {
-		const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
-		const BASE = 'https://api.themoviedb.org/3';
-
 		const [netflixRes, trendingRes] = await Promise.all([
-			fetch(requests.fetchNetflixOriginals).then((r) => r.json()),
-			fetch(requests.fetchTrending).then((r) => r.json()),
+			tmdbFetch<TmdbResponse<any>>(requests.fetchNetflixOriginals, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<any>>(requests.fetchTrending, { params: { language: 'en-US' } }),
 		]);
 
 		return {
 			props: {
-				netflixOriginals: netflixRes.results || [],
-				trending: trendingRes.results || [],
+				netflixOriginals: netflixRes?.results ?? [],
+				trending: trendingRes?.results ?? [],
 			},
 			revalidate: 3600,
 		};
