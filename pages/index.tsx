@@ -86,7 +86,6 @@ const Home = ({
 	}
 
 	if (!user) {
-		router.push('/login');
 		return null;
 	}
 
@@ -180,14 +179,20 @@ export const getStaticProps = async () => {
 			romanceMoviesRes,
 			documentariesRes,
 		] = await Promise.all([
-			tmdbFetch<TmdbResponse<Movie>>(requests.fetchNetflixOriginals, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchNetflixOriginals, {
+				params: { language: 'en-US' },
+			}),
 			tmdbFetch<TmdbResponse<Movie>>(requests.fetchTrending, { params: { language: 'en-US' } }),
 			tmdbFetch<TmdbResponse<Movie>>(requests.fetchTopRated, { params: { language: 'en-US' } }),
 			tmdbFetch<TmdbResponse<Movie>>(requests.fetchActionMovies, { params: { language: 'en-US' } }),
 			tmdbFetch<TmdbResponse<Movie>>(requests.fetchComedyMovies, { params: { language: 'en-US' } }),
 			tmdbFetch<TmdbResponse<Movie>>(requests.fetchHorrorMovies, { params: { language: 'en-US' } }),
-			tmdbFetch<TmdbResponse<Movie>>(requests.fetchRomanceMovies, { params: { language: 'en-US' } }),
-			tmdbFetch<TmdbResponse<Movie>>(requests.fetchDocumentaries, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchRomanceMovies, {
+				params: { language: 'en-US' },
+			}),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchDocumentaries, {
+				params: { language: 'en-US' },
+			}),
 		]);
 
 		return {

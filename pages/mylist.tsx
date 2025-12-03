@@ -1,5 +1,4 @@
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import Row from '@/components/Row';
@@ -7,15 +6,10 @@ import useAuth from '@/hooks/useAuth';
 import useList from '@/hooks/useList';
 
 export default function MyListPage() {
-	const router = useRouter();
-	const { user, loading } = useAuth();
-	const list = useList(user?.uid);
+ const { user, loading } = useAuth();
+ const list = useList(user?.uid);
 
-	if (loading) return null;
-	if (!user) {
-		router.push('/login');
-		return null;
-	}
+ if (loading || !user) return null;
 
 	return (
 		<div>
