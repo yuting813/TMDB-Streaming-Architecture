@@ -10,10 +10,12 @@ import { useRouter } from 'next/router';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from '../firebase';
 
-// 自動登出時間設置（毫秒）
-const TOKEN_EXPIRATION_TIME = 1800000; // 30分鐘 = 30 * 60 * 1000
+// 30 分鐘自動登出（毫秒）
+const TOKEN_EXPIRATION_TIME = 30 * 60 * 1000;
 
-// 添加返回值類型介面
+// 固定 public paths，避免 array reference 變動
+const PUBLIC_PATHS = Object.freeze(['/login', '/signup', '/reset', '/pricing']);
+
 interface AuthResponse {
 	success: boolean;
 	error?: string;
@@ -21,11 +23,13 @@ interface AuthResponse {
 
 interface IAuth {
 	user: User | null;
-	signUp: (email: string, password: string) => Promise<AuthResponse>; // 更新返回類型
-	signIn: (email: string, password: string) => Promise<AuthResponse>; // 更新返回類型
+	signUp: (email: string, password: string) => Promise<AuthResponse>;
+	signIn: (email: string, password: string) => Promise<AuthResponse>;
 	logout: () => Promise<{ success: boolean }>;
 	error: string | null;
 	loading: boolean;
+	resetError: () => void;
+	initialLoading: boolean;
 }
 
 const AuthContext = createContext<IAuth>({
@@ -35,86 +39,75 @@ const AuthContext = createContext<IAuth>({
 	logout: async () => ({ success: false }),
 	error: null,
 	loading: false,
+	resetError: () => undefined, // NOOP function，避免 eslint no-empty-function
+	initialLoading: true,
 });
 
-interface AuthProviderProps {
-	children: React.ReactNode;
-}
-
-export const AuthProvider = ({ children }: AuthProviderProps) => {
-	const [loading, setLoading] = useState(false);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+	const [loading, setLoading] = useState(false); // signIn/signUp/loading 狀態
 	const [user, setUser] = useState<User | null>(null);
-	const [error, setError] = useState(null);
+	const [error, setError] = useState<string | null>(null);
 	const [initialLoading, setInitialLoading] = useState(true);
 	const router = useRouter();
 
-	// Persisting the user
-	useEffect(
-		() =>
-			onAuthStateChanged(auth, (user) => {
-				if (user) {
-					// Logged in...
-					setUser(user);
-					setLoading(false);
-				} else {
-					// Not logged in...
-					setUser(null);
-					try {
-						// 允許訪問登入和註冊頁面
-						const publicPaths = ['/login', '/signup'];
-						if (!publicPaths.includes(router.pathname)) {
-							router.push('/login');
-						}
-					} catch (error) {
-						console.error('路由切換錯誤:', error);
-					}
-				}
-
-				setInitialLoading(false);
-			}),
-		[router],
-	);
-
+	/** ----------------- onAuthStateChanged：同步 user + redirect ----------------- */
 	useEffect(() => {
-		let logoutTimer: NodeJS.Timeout;
+		const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+			if (fbUser) {
+				setUser(fbUser);
+				setLoading(false);
+			} else {
+				setUser(null);
 
-		if (user) {
-			logoutTimer = setTimeout(async () => {
-				try {
-					await logout();
-					console.log('自動登出成功');
-				} catch (error) {
-					console.error('自動登出失敗:', error);
+				// 不是公開頁面 → 自動導向 login
+				if (!PUBLIC_PATHS.includes(router.pathname)) {
+					router.push('/login').catch((err) => console.error('路由切換錯誤:', err));
 				}
-			}, TOKEN_EXPIRATION_TIME);
-		}
-
-		return () => {
-			if (logoutTimer) {
-				clearTimeout(logoutTimer);
 			}
-		};
-	}, [user]);
 
+			setInitialLoading(false);
+		});
+
+		return unsubscribe;
+	}, [router.pathname, router]);
+
+	/** ----------------- 自動登出計時器 ----------------- */
+	useEffect(() => {
+		if (!user) return;
+
+		const timer = setTimeout(async () => {
+			try {
+				await logout();
+				console.log('自動登出成功');
+			} catch (err) {
+				console.error('自動登出失敗:', err);
+			}
+		}, TOKEN_EXPIRATION_TIME);
+
+		return () => clearTimeout(timer);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [user]); // 不能放 logout，會導致無限重新建立 timer
+
+	/** ----------------- 清除錯誤訊息 ----------------- */
 	const resetError = useCallback(() => {
 		setError(null);
 	}, []);
 
+	/** ----------------- Sign In ----------------- */
 	const signIn = useCallback(
 		async (email: string, password: string) => {
 			setLoading(true);
 			resetError();
+
 			try {
 				const userCredential = await signInWithEmailAndPassword(auth, email, password);
 				setUser(userCredential.user);
 				return { success: true };
-			} catch (error) {
-				const authError = error as AuthError;
+			} catch (err) {
+				const authError = err as AuthError;
 				console.error('登入錯誤:', authError);
-				return {
-					success: false,
-					error: authError.code,
-				};
+				setError(authError.code);
+				return { success: false, error: authError.code };
 			} finally {
 				setLoading(false);
 			}
@@ -122,22 +115,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		[resetError],
 	);
 
+	/** ----------------- Sign Up ----------------- */
 	const signUp = useCallback(
 		async (email: string, password: string) => {
 			setLoading(true);
 			resetError();
+
 			try {
 				const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-				console.log(userCredential.user);
 				setUser(userCredential.user);
 				return { success: true };
-			} catch (error) {
-				const authError = error as AuthError;
+			} catch (err) {
+				const authError = err as AuthError;
 				console.error('註冊錯誤:', authError);
-				return {
-					success: false,
-					error: authError.code,
-				};
+				setError(authError.code);
+				return { success: false, error: authError.code };
 			} finally {
 				setLoading(false);
 			}
@@ -145,32 +137,42 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		[resetError],
 	);
 
-	const logout = async () => {
+	/** ----------------- Logout ----------------- */
+	const logout = useCallback(async () => {
 		setLoading(true);
 		try {
 			await signOut(auth);
 			setUser(null);
+			setError(null);
+
+			if (router.pathname !== '/login') {
+				await router.push('/login');
+			}
+
 			return { success: true };
-		} catch (error) {
-			console.error('登出錯誤:', error);
+		} catch (err) {
+			console.error('登出錯誤:', err);
 			return { success: false };
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [router]);
 
+	/** ----------------- memo ----------------- */
 	const memoedValue = useMemo(
 		() => ({
 			user,
 			signUp,
 			signIn,
 			loading,
-			logout,
-			error,
-			resetError,
-		}),
-		[user, loading, error, signIn, signUp, resetError],
-	);
+				logout,
+				error,
+				resetError,
+				initialLoading,
+			}),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[user, loading, error, signIn, signUp, resetError, initialLoading],
+		);
 
 	return (
 		<AuthContext.Provider value={memoedValue}>{!initialLoading && children}</AuthContext.Provider>
