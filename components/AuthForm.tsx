@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import useAuth from '@/hooks/useAuth';
 
 type Mode = 'login' | 'signup';
 
@@ -12,15 +13,28 @@ interface Props {
 	mode: Mode;
 	onSubmit: (data: Inputs) => Promise<void> | void;
 	loading?: boolean;
-	message?: { type: string; content: string } | null;
 }
 
-const AuthForm: React.FC<Props> = ({ mode, onSubmit, loading, message }) => {
+const ERROR_MAP: Record<string, string> = {
+	'auth/email-already-in-use': '此信箱已被註冊，請直接登入',
+	'auth/user-not-found': '帳號未註冊，請先註冊帳號',
+	'auth/wrong-password': '密碼錯誤，請重新輸入',
+	'auth/invalid-email': '信箱格式不正確',
+};
+
+const AuthForm: React.FC<Props> = ({ mode, onSubmit, loading }) => {
+	const { error: authError } = useAuth();
+
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 	} = useForm<Inputs>();
+
+	const errorMessage = useMemo(() => {
+		if (!authError) return '';
+		return ERROR_MAP[authError] || '發生錯誤，請稍後再試';
+	}, [authError]);
 
 	const submit: SubmitHandler<Inputs> = async (data) => {
 		await onSubmit(data);
@@ -70,24 +84,14 @@ const AuthForm: React.FC<Props> = ({ mode, onSubmit, loading, message }) => {
 				</label>
 			</div>
 
-			{message && message.content && (
-				<div
-					className={`p-3 rounded text-center ${
-						message.type === 'success'
-							? 'bg-green-500/20 text-green-500'
-							: 'bg-red-500/20 text-red-500'
-					}`}
-				>
-					{message.content}
-				</div>
+			{errorMessage && (
+				<div className='rounded bg-red-500/20 p-3 text-center text-red-500'>{errorMessage}</div>
 			)}
 
 			<button
 				disabled={loading}
 				className={`w-full rounded py-3 font-semibold ${
-					loading || (message && message.type === 'success')
-						? 'bg-[#e50914]/60'
-						: 'bg-[#e50914] hover:bg-[#e50914]/80'
+					loading ? 'bg-[#e50914]/60' : 'bg-[#e50914] hover:bg-[#e50914]/80'
 				}`}
 			>
 				{loading ? (

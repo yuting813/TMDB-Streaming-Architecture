@@ -6,11 +6,6 @@ import { SubmitHandler } from 'react-hook-form';
 import AuthForm from '@/components/AuthForm';
 import useAuth from '@/hooks/useAuth';
 
-interface FirebaseAuthError {
-	code: string;
-	message: string;
-}
-
 type Inputs = {
 	email: string;
 	password: string;
@@ -18,43 +13,18 @@ type Inputs = {
 
 function Signup() {
 	const router = useRouter();
-	const { signUp, loading } = useAuth();
-	const [message, setMessage] = useState({ type: '', content: '' });
+	const { signUp, loading, initialLoading } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
-
-	// form handled by shared AuthForm component
-	const handleAuthError = (error: FirebaseAuthError) => {
-		switch (error.code) {
-			case 'auth/email-already-in-use':
-				return { type: 'error', content: '此信箱已被註冊，請直接登入' };
-			case 'auth/user-not-found':
-				return { type: 'error', content: '帳號未註冊，請先註冊帳號' };
-			case 'auth/wrong-password':
-				return { type: 'error', content: '密碼錯誤，請重新輸入' };
-			case 'auth/invalid-email':
-				return { type: 'error', content: '信箱格式不正確' };
-			default:
-				console.error('認證錯誤:', error);
-				return { type: 'error', content: '發生錯誤，請稍後再試' };
-		}
-	};
 
 	const onSubmit: SubmitHandler<Inputs> = async ({ email, password }) => {
 		if (isSubmitting) return;
 		setIsSubmitting(true);
-		setMessage({ type: '', content: '' });
 
 		try {
 			const result = await signUp(email, password);
 			if (result.success) {
-				setMessage({ type: 'success', content: '註冊成功！即將跳轉...' });
-				setTimeout(() => router.push('/'), 1500);
-			} else {
-				setMessage(handleAuthError({ code: result.error || '', message: '' }));
+				router.push('/');
 			}
-		} catch (error) {
-			const firebaseError = error as FirebaseAuthError;
-			setMessage(handleAuthError(firebaseError));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -90,7 +60,11 @@ function Signup() {
 				sizes='75px'
 			/>
 
-			<AuthForm mode='signup' onSubmit={handleAuthFormSubmit} loading={loading} message={message} />
+			<AuthForm
+				mode='signup'
+				onSubmit={handleAuthFormSubmit}
+				loading={loading || isSubmitting || initialLoading}
+			/>
 
 			<div className='mt-6 text-center text-[gray]'>
 				已經有帳號? {'  '}
