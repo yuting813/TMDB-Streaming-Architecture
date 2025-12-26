@@ -1,33 +1,50 @@
 import { CheckIcon, PlusIcon, ThumbUpIcon, VolumeOffIcon, XIcon } from '@heroicons/react/outline';
 import { VolumeUpIcon } from '@heroicons/react/solid';
 import MuiModal from '@mui/material/Modal';
-import { collection, deleteDoc, doc, DocumentData, onSnapshot, setDoc } from 'firebase/firestore';
+import { deleteDoc, doc, setDoc } from 'firebase/firestore';
+import Image from 'next/image';
 import { useRecoilState } from 'recoil';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { FaPause, FaPlay } from 'react-icons/fa';
 import ReactPlayer from 'react-player/lazy';
 import { modalState, movieState } from '../atoms/modalAtom';
 import { db } from '../firebase';
 import useAuth from '../hooks/useAuth';
+import useList from '../hooks/useList';
+import { Element, Genre } from '../typings';
 import { tmdbFetch } from '../utils/request';
-import { Element, Genre, Movie } from '../typings';
 
 function Modal() {
 	const [showModal, setShowModal] = useRecoilState(modalState);
 	const [movie] = useRecoilState(movieState);
-	const triggerElementRef = useRef<HTMLElement | null>(null);
+
+	const triggerRef = useRef<HTMLElement | null>(null);
 	const modalRef = useRef<HTMLDivElement | null>(null);
+
 	const [trailer, setTrailer] = useState('');
+	const [trailerLoading, setTrailerLoading] = useState(true);
 	const [genres, setGenres] = useState<Genre[]>([]);
 	const [muted, setMuted] = useState(true);
 	const [addedToList, setAddedToList] = useState(false);
-	// Local UX states for quick feedback
+
 	const [isPlayingBtn, setIsPlayingBtn] = useState(false);
 	const [playing, setPlaying] = useState(true);
 	const [liked, setLiked] = useState(false);
+
 	const { user } = useAuth();
-	const [movies, setMovies] = useState<DocumentData[] | Movie[]>([]);
+	const list = useList(user?.uid);
+
+	const [posterLoaded, setPosterLoaded] = useState(false);
+	const [posterError, setPosterError] = useState(false);
+
+	const posterPath = movie?.backdrop_path || movie?.poster_path;
+	const hasTrailer = Boolean(trailer);
+
+	const heroImageSrc =
+		posterError || !posterPath
+			? '/fallback-image.webp'
+			: `https://image.tmdb.org/t/p/w780${posterPath}`;
 
 	const toastStyle = {
 		background: 'white',
@@ -39,95 +56,81 @@ function Modal() {
 		maxWidth: '1000px',
 	};
 
+	/* ===========================================================
+	   Fetch Trailer + Lifecycle Safe
+	   =========================================================== */
 	useEffect(() => {
 		if (!movie) return;
 
-		if (process.env.NODE_ENV !== 'production') {
-			console.log('Modal: movie changed, fetching details for', {
-				id: movie.id,
-				media_type: movie.media_type,
-			});
-		}
+		const currentMovie = movie;
+
+		let active = true;
+		setTrailer('');
+		setTrailerLoading(true);
+		setPlaying(true);
 
 		async function fetchMovie() {
 			const data = await tmdbFetch<any>(
-				`/${movie?.media_type === 'tv' ? 'tv' : 'movie'}/${movie?.id}`,
+				`/${currentMovie.media_type === 'tv' ? 'tv' : 'movie'}/${currentMovie.id}`,
 				{
 					params: {
 						language: 'en-US',
 						append_to_response: 'videos',
 					},
 				},
-			).catch((err) => console.log(err.message));
+			).catch(() => null);
 
-			if (data?.videos) {
-				const index = data.videos.results.findIndex(
-					(element: Element) => element.type === 'Trailer',
-				);
-				setTrailer(data.videos?.results[index]?.key);
-			}
-			if (data?.genres) {
-				setGenres(data.genres);
-			}
+			if (!active) return;
+
+			let key = '';
+			const list = data?.videos?.results || [];
+			const index = list.findIndex((el: Element) => el.type === 'Trailer');
+			if (index !== -1) key = list[index].key;
+
+			setTrailer(key);
+			setGenres(data?.genres || []);
+			setPlaying(Boolean(key));
+			setTrailerLoading(false);
 		}
 
 		fetchMovie();
+		return () => {
+			active = false;
+		};
 	}, [movie]);
 
-	useEffect(() => {
-		if (user) {
-			const unsubscribe = onSnapshot(
-				collection(db, 'customers', user.uid, 'myList'),
-				(snapshot) => {
-					try {
-						setMovies(snapshot.docs.map((doc) => doc.data()));
-					} catch (error) {
-						console.error('Error fetching My List:', error);
-						//Handle the error appropriately, perhaps by showing an error message.
-					}
-				},
-				(error) => {
-					console.error('Error listening to My List:', error);
-					//Handle the error appropriately.
-				},
-			);
-			return unsubscribe; // Important to unsubscribe when the component unmounts.
-		}
-	}, [user]);
-
-	// Check if the movie is already in the user's list
 	useEffect(
-		() => setAddedToList(movies.findIndex((result) => result.id === movie?.id) !== -1),
-		[movies, movie],
+		() => setAddedToList(list.findIndex((result) => result.id === movie?.id) !== -1),
+		[list, movie],
 	);
 
+	useEffect(() => {
+		setPosterLoaded(false);
+		setPosterError(false);
+	}, [movie]);
+
+	/* ===========================================================
+	   Add / Remove List
+	   =========================================================== */
 	const handleList = async () => {
 		if (!user) {
-			toast('Please sign in to add movies to your list', {
-				duration: 8000,
-				style: toastStyle,
-			});
+			toast('Please sign in to add movies to your list', { duration: 8000, style: toastStyle });
 			return;
 		}
 
 		if (!movie) {
-			toast('Unable to add movie, please try again later', {
-				duration: 8000,
-				style: toastStyle,
-			});
+			toast('Unable to add movie, please try again later', { duration: 8000, style: toastStyle });
 			return;
 		}
 
 		if (addedToList) {
 			await deleteDoc(doc(db, 'customers', user.uid, 'myList', movie.id.toString()));
-
 			toast(`${movie?.title || movie?.original_name} has been removed from My List`, {
 				duration: 8000,
 				style: toastStyle,
 			});
 		} else {
 			await setDoc(doc(db, 'customers', user.uid, 'myList', movie.id.toString()), { ...movie });
-
 			toast(`${movie?.title || movie?.original_name} has been added to My List`, {
 				duration: 8000,
 				style: toastStyle,
@@ -135,82 +138,22 @@ function Modal() {
 		}
 	};
 
-	const handleClose = () => {
-		setShowModal(false);
-		// Return focus to the trigger element (e.g., Thumbnail that opened the modal)
-		setTimeout(() => {
-			triggerElementRef.current?.focus();
-		}, 0);
-	};
-
-	// Store reference to the element that triggered the modal open
-	useEffect(() => {
-		if (showModal) {
-			triggerElementRef.current = document.activeElement as HTMLElement;
-		}
-	}, [showModal]);
-
-	// Focus trap: keep focus inside modal while open
-	useEffect(() => {
-		const handleTabKey = (e: KeyboardEvent) => {
-			if (e.key !== 'Tab' || !modalRef.current) return;
-
-			const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
-				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-			);
-
-			if (focusableElements.length === 0) return;
-
-			const firstElement = focusableElements[0];
-			const lastElement = focusableElements[focusableElements.length - 1];
-			const activeElement = document.activeElement;
-
-			if (e.shiftKey) {
-				if (activeElement === firstElement) {
-					e.preventDefault();
-					lastElement.focus();
-				}
-			} else {
-				if (activeElement === lastElement) {
-					e.preventDefault();
-					firstElement.focus();
-				}
-			}
-		};
-
-		if (showModal) {
-			window.addEventListener('keydown', handleTabKey);
-			// Move focus to first focusable element
-			modalRef.current?.querySelector<HTMLElement>('button')?.focus();
-		}
-
-		return () => window.removeEventListener('keydown', handleTabKey);
-	}, [showModal]);
-
-	// Close modal on Escape key press for accessibility
-	useEffect(() => {
-		const onKey = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				setShowModal(false);
-			}
-		};
-
-		if (showModal) window.addEventListener('keydown', onKey);
-		return () => window.removeEventListener('keydown', onKey);
-	}, [showModal]);
-
-	// Quick UX handlers for Play and ThumbUp buttons
+	/* ===========================================================
+	   Play Button
+	   =========================================================== */
 	const handlePlayClick = () => {
-		if (!movie || !trailer) {
-			toast('Trailer not available', { duration: 3000, style: toastStyle });
+		if (trailerLoading) {
+			toast('Loading trailer...', { duration: 1500, style: toastStyle });
+			return;
+		}
+		if (!trailer) {
+			toast('Trailer not available', { duration: 2000, style: toastStyle });
 			return;
 		}
 
-		// Toggle play/pause
 		setPlaying((prev) => {
 			const next = !prev;
 			if (next) {
-				// Brief feedback when starting
 				setIsPlayingBtn(true);
 				setTimeout(() => setIsPlayingBtn(false), 1200);
 			}
@@ -221,162 +164,218 @@ function Modal() {
 	const handleThumbUpClick = () => {
 		setLiked((prev) => {
 			const next = !prev;
-			toast(next ? 'Added to your likes' : 'Removed like', {
-				duration: 3000,
-				style: toastStyle,
-			});
+			toast(next ? 'Added to your likes' : 'Removed like', { duration: 2000, style: toastStyle });
 			return next;
 		});
 	};
 
+	/* ===========================================================
+	   Accessibility: Focus Trap + ESC
+	   =========================================================== */
+	const handleClose = useCallback(() => {
+		setShowModal(false);
+		setTimeout(() => {
+			triggerRef.current?.focus();
+		}, 0);
+	}, [setShowModal]);
+
+	useEffect(() => {
+		if (showModal) triggerRef.current = document.activeElement as HTMLElement;
+	}, [showModal]);
+
+	/* Focus trap */
+	useEffect(() => {
+		const handleTab = (e: KeyboardEvent) => {
+			if (e.key !== 'Tab' || !modalRef.current) return;
+
+			const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+			);
+
+			if (!focusable.length) return;
+
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+			const active = document.activeElement;
+
+			if (e.shiftKey) {
+				if (active === first) {
+					e.preventDefault();
+					last.focus();
+				}
+			} else {
+				if (active === last) {
+					e.preventDefault();
+					first.focus();
+				}
+			}
+		};
+
+		if (showModal) window.addEventListener('keydown', handleTab);
+		return () => window.removeEventListener('keydown', handleTab);
+	}, [showModal]);
+
+	/* ESC to close */
+	useEffect(() => {
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') handleClose();
+		};
+		if (showModal) window.addEventListener('keydown', onKey);
+		return () => window.removeEventListener('keydown', onKey);
+	}, [handleClose, showModal]);
+
+	/* ===========================================================
+	   Badge Component (Netflix 透明邊框)
+	   =========================================================== */
+	const Badge = ({ children }: { children: React.ReactNode }) => (
+		<div className='mb-3 flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-amber-200 backdrop-blur-sm'>
+			{children}
+		</div>
+	);
+
+	/* ===========================================================
+	   Render
+	   =========================================================== */
 	return (
 		<MuiModal
 			open={showModal}
 			onClose={handleClose}
-			className='fixex !top-7 left-0 right-0 z-50 mx-auto w-full max-w-5xl overflow-hidden overflow-y-scroll rounded-md scrollbar-hide'
+			className='fixed !top-7 left-0 right-0 z-50 mx-auto w-full max-w-5xl overflow-hidden overflow-y-scroll rounded-md scrollbar-hide'
 		>
 			<div ref={modalRef}>
 				<Toaster position='bottom-center' />
+
+				{/* Close Button */}
 				<button
 					onClick={handleClose}
-					className='modalButton absolute right-5 top-5 !z-40 h-9 w-9 border-none bg-[#181818] hover:bg-[#181818]'
+					aria-label='Close modal'
+					className='modalButton absolute right-5 top-5 !z-40 h-9 w-9 border-none bg-[#181818]'
 				>
 					<XIcon className='h-6 w-6' />
 				</button>
 
-				<div className='relative pt-[56.25%]'>
-					<ReactPlayer
-						url={`https://www.youtube.com/watch?v=${trailer}`}
-						width='100%'
-						height='100%'
-						style={{ position: 'absolute', top: '0', left: '0' }}
-						playing={playing}
-						muted={muted}
-						onPlay={() => {
-							setPlaying(true);
-							setIsPlayingBtn(true);
-							setTimeout(() => setIsPlayingBtn(false), 1200);
-						}}
-						onPause={() => setPlaying(false)}
-						onEnded={() => setPlaying(false)}
-					/>
-					<div className='absolute bottom-2 flex w-full items-center justify-between px-4 sm:bottom-10 sm:px-10'>
-						{/* Desktop controls: large play button + small buttons */}
-						<div className='hidden items-center space-x-2 sm:flex'>
-							<button
-								onClick={handlePlayClick}
-								aria-pressed={playing}
-								aria-label='Play trailer'
-								className={
-									'flex items-center gap-x-2 rounded px-8 py-2 text-xl font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
-									(isPlayingBtn
-										? 'scale-95 transform bg-green-500 text-white hover:bg-green-600'
-										: playing
-											? 'bg-green-600 text-white hover:bg-green-700'
-											: 'bg-white text-black hover:bg-[#e6e6e6]')
-								}
-							>
-								{isPlayingBtn ? (
-									<>
-										<svg
-											className='h-6 w-6 animate-spin text-white'
-											viewBox='0 0 24 24'
-											fill='none'
-											xmlns='http://www.w3.org/2000/svg'
-										>
-											<circle
-												cx='12'
-												cy='12'
-												r='10'
-												stroke='currentColor'
-												strokeWidth='4'
-												strokeLinecap='round'
-												strokeLinejoin='round'
-											/>
-										</svg>
-										<span>Playing</span>
-									</>
-								) : playing ? (
-									<>
-										<FaPause className='h-7 w-7 text-white' />
-										<span>Pause</span>
-									</>
-								) : (
-									<>
-										<FaPlay className='h-7 w-7 text-black' />
-										<span>Play</span>
-									</>
-								)}
-							</button>
-
-							<button className='modalButton' onClick={handleList} aria-label='Add to My List'>
-								{addedToList ? <CheckIcon className='h-7 w-7' /> : <PlusIcon className='h-7 w-7' />}
-							</button>
-
-							<button
-								onClick={handleThumbUpClick}
-								aria-pressed={liked}
-								aria-label='Like'
-								className={
-									'modalButton transition-transform ' + (liked ? 'scale-110 text-blue-400' : '')
-								}
-							>
-								<ThumbUpIcon className='h-7 w-7' />
-							</button>
+				{/* =====================================================
+				   Trailer / Loading / Fallback
+				   ===================================================== */}
+				<div className='relative bg-black pt-[56.25%]'>
+					{/* Trailer Available */}
+					{hasTrailer ? (
+						<ReactPlayer
+							url={`https://www.youtube.com/watch?v=${trailer}`}
+							width='100%'
+							height='100%'
+							style={{ position: 'absolute', top: 0, left: 0 }}
+							playing={playing}
+							muted={muted}
+							onPlay={() => {
+								setPlaying(true);
+								setIsPlayingBtn(true);
+								setTimeout(() => setIsPlayingBtn(false), 1200);
+							}}
+							onPause={() => setPlaying(false)}
+							onEnded={() => setPlaying(false)}
+						/>
+					) : /* Loading State */
+					trailerLoading ? (
+						<div className='absolute inset-0 flex animate-pulse flex-col items-center justify-center rounded-t-md bg-gray-700/40 backdrop-blur-sm'>
+							<Badge>Loading trailer...</Badge>
 						</div>
+					) : (
+						/* Fallback State */
+						<div className='absolute inset-0 overflow-hidden rounded-t-md'>
+							{/* Skeleton */}
+							{!posterLoaded && !posterError && (
+								<div className='absolute inset-0 animate-pulse bg-gray-700' />
+							)}
 
-						{/* Mobile controls: Play (rectangular, smaller), Add, Like, Muted — evenly spaced */}
-						<div className='flex w-full items-center justify-around px-6 sm:hidden'>
+							<Image
+								src={heroImageSrc}
+								alt='Fallback artwork'
+								fill
+								className={`object-cover transition-opacity duration-500 ${
+									posterLoaded ? 'opacity-100' : 'opacity-0'
+								}`}
+								onLoadingComplete={() => setPosterLoaded(true)}
+								onError={() => {
+									setPosterError(true);
+									setPosterLoaded(true);
+								}}
+							/>
+
+							<div className='absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent' />
+
+							<div className='absolute inset-0 flex flex-col items-center justify-center px-6 text-center'>
+								<Badge>Trailer Unavailable</Badge>
+								<p className='max-w-xl text-sm text-gray-200'>
+									{
+										"We couldn't find a trailer for this title. You can still add it to My List and watch later."
+									}
+								</p>
+							</div>
+						</div>
+					)}
+
+					{/* =====================================================
+					   Controls Row（最重要：左三右一佈局）
+					   ===================================================== */}
+					<div className='absolute bottom-2 flex w-full items-center justify-between px-4 sm:bottom-10 sm:px-10'>
+						{/* 左側：Play / Add / Like */}
+						<div className='flex items-center space-x-3'>
+							{/* Play */}
 							<button
 								onClick={handlePlayClick}
-								aria-pressed={playing}
-								aria-label='Play trailer'
+								disabled={!hasTrailer || trailerLoading}
 								className={
-									'flex items-center gap-x-2 rounded px-10 py-2 text-lg font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
-									(isPlayingBtn
-										? 'scale-95 transform bg-green-500 text-white'
+									'flex items-center gap-x-2 rounded px-8 py-2 text-xl font-bold transition disabled:opacity-60 ' +
+									(!hasTrailer || trailerLoading
+										? 'bg-white/20 text-white'
 										: playing
 											? 'bg-green-600 text-white'
 											: 'bg-white text-black')
 								}
 							>
-								{playing ? <FaPause className='h-6 w-6' /> : <FaPlay className='h-5 w-5' />}
-								<span className='hidden sm:inline-block'>{playing ? 'Pause' : 'Play'}</span>
+								{playing ? <FaPause className='h-7 w-7' /> : <FaPlay className='h-7 w-7' />}
+								<span>{playing ? 'Pause' : 'Play'}</span>
 							</button>
 
+							{/* Add */}
 							<button
-								className='modalButton h-11 w-11'
+								className='modalButton'
 								onClick={handleList}
-								aria-label='Add to My List'
+								aria-label={addedToList ? 'Remove from My List' : 'Add to My List'}
 							>
-								{addedToList ? <CheckIcon className='h-6 w-6' /> : <PlusIcon className='h-6 w-6' />}
+								{addedToList ? <CheckIcon className='h-7 w-7' /> : <PlusIcon className='h-7 w-7' />}
 							</button>
 
+							{/* Like */}
 							<button
-								className={`modalButton h-11 w-11 ${liked ? 'scale-110 text-blue-400' : ''}`}
 								onClick={handleThumbUpClick}
-								aria-label='Like'
+								aria-label={liked ? 'Remove like' : 'Like'}
+								className={`modalButton ${liked ? 'scale-110 text-blue-400' : ''}`}
 							>
-								<ThumbUpIcon className='h-6 w-6' />
+								<ThumbUpIcon className='h-7 w-7' />
 							</button>
-
-							{/* <button className='modalButton h-12 w-12 SM:hidden' onClick={() => setMuted(!muted)} aria-label='Toggle mute'>
-								{muted ? <VolumeOffIcon className='h-6 w-6' /> : <VolumeUpIcon className='h-6 w-6' />}
-							</button> */}
 						</div>
 
-						{/* Mute button kept on the right (desktop + mobile) */}
-						<button className='modalButton' onClick={() => setMuted(!muted)}>
+						{/* 右側：Mute（大小一致、靠右） */}
+						<button
+							className='modalButton'
+							onClick={() => setMuted(!muted)}
+							aria-label={muted ? 'Unmute' : 'Mute'}
+						>
 							{muted ? <VolumeOffIcon className='h-6 w-6' /> : <VolumeUpIcon className='h-6 w-6' />}
 						</button>
 					</div>
 				</div>
 
+				{/* =====================================================
+				   Info Section
+				   ===================================================== */}
 				<div className='flex space-x-16 rounded-b-md bg-[#181818] px-10 py-8'>
 					<div className='space-y-6 text-lg'>
 						<div className='flex items-center space-x-2 text-sm'>
 							<p className='font-semibold text-green-400'>
-								{movie?.vote_average ? `${(movie.vote_average * 10).toFixed(0)}%` : ''}Match
+								{movie?.vote_average ? `${(movie.vote_average * 10).toFixed(0)}%` : ''} Match
 							</p>
 							<p className='font-light'>{movie?.release_date || movie?.first_air_date}</p>
 							<div className='flex h-4 items-center justify-center rounded border border-white/40 px-1.5 text-xs'>
@@ -386,17 +385,16 @@ function Modal() {
 
 						<div className='flex flex-col gap-x-10 gap-y-4 font-light md:flex-row'>
 							<p className='w-5/6'>{movie?.overview}</p>
+
 							<div className='flex flex-col space-y-3 text-sm'>
 								<div>
 									<span className='text-[gray]'>Genres: </span>
-									{genres.map((genre) => genre.name).join(', ')}
+									{genres.map((g) => g.name).join(', ')}
 								</div>
-
 								<div>
 									<span className='text-[gray]'>Original language: </span>
 									{movie?.original_language}
 								</div>
-
 								<div>
 									<span className='text-[gray]'>Total votes: </span>
 									{movie?.vote_count}
