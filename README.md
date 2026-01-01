@@ -1,154 +1,139 @@
----
+[English](README.md) | [繁體中文](README.zh-TW.md)
 
-# Netflix Clone (Next.js + TypeScript)
+# Netflix Clone - Frontend Engineering Streaming Platform
 
-A Netflix-inspired streaming web application built as a **career-transition portfolio project**, focusing on **frontend engineering quality, UX details, and real-world integrations**.
+A Netflix-inspired streaming web application built as a **career-transition frontend
+portfolio project**, emphasizing **UI architecture, predictable state flow, UX edge cases, and accessibility** over feature quantity.
 
-[Live Demo](https://stream.tinahu.dev) | [Source Code](https://github.com/yuting813/netflix-clone-nextjs)
-
----
-
-## Overview
-
-This project replicates core Netflix user experiences, including authentication, subscription-based access control, content browsing, and interactive media previews.
-
-The primary goal of this project is to demonstrate **practical frontend engineering skills**, such as:
-
-* Maintainable project structure
-* Typed API integration
-* UI/UX edge case handling
-* Authentication and subscription flows
-* Clean commit history and engineering conventions
+Live demo: https://stream.tinahu.dev/
+Source code: https://github.com/yuting813/netflix-clone-nextjs
 
 ---
 
-## Tech Stack
+## Why This Project
 
-* **Framework:** Next.js, React
-* **Language:** TypeScript
-* **Styling:** Tailwind CSS
-* **UI Components:** MUI (Modal), Emotion
-* **State Management:** Recoil
-* **Authentication:** Firebase Auth
-* **Database:** Firestore
-* **Payments:** Stripe Checkout
-* **External API:** TMDB API
-* **Tooling:** ESLint, Prettier
+This project simulates real frontend engineering challenges:
+
+- Auth-driven UI state and route protection
+- Subscription-gated UI behavior
+- External API data with missing or unstable fields
+- UX edge cases (loading, empty, fallback, errors)
+- Component architecture that is easy to explain and evolve
+
+The goal is to demonstrate **how I reason about frontend systems**, not just feature output.
+
+---
+
+## Frontend Engineering Focus
+
+- **UI architecture**: components are pure, hooks manage side effects
+- **Predictable state flow**: centralized auth and subscription state with guarded initialization
+- **UX edge cases**: explicit loading, missing trailer, and fallback handling
+- **Accessibility**: ESC to close modal, focus restoration, keyboard flow
+- **Responsive stability**: header/rows remain stable under scroll and resize
+- **Maintainability**: typed helpers + shared types to reduce UI coupling
 
 ---
 
 ## Core Features
 
-### Media Browsing and Modal Experience
-
-* Movie and TV show previews displayed in an interactive modal
-* Trailer loading state with visual feedback
-* Graceful fallback when trailers are unavailable
-* Keyboard interaction support (Esc to close modal)
-* Responsive layout adapted for desktop and mobile screens
+- Sign up / sign in / auto sign-out (Firebase Auth)
+- Subscription creation and gated access (Stripe + Firestore)
+- Movie browsing with random hero banner and categorized horizontal rows
+- Movie detail modal with trailer playback and robust fallback states
+- My List with real-time sync
 
 ---
 
-### Authentication and Route Protection
+## Tech Stack
 
-* Centralized authentication state management via custom hooks
-* Automatic redirect for unauthenticated users
-* Redirect race condition fixes during authentication state initialization
-* Session expiration handling based on authentication state
-
----
-
-### API Architecture
-
-* TMDB requests centralized into typed helper functions
-* Clear separation between most data fetching logic and UI rendering
-* Basic error handling with fallback UI and user feedback
-* Reduced duplication across components through shared utilities
-
----
-
-### Subscription Flow
-
-* Stripe Checkout integration for subscription payments
-* Firestore-based subscription status synchronization
-* UI behavior dynamically adjusted based on subscription state
-* Subscription flow designed to resemble real-world product behavior
+- **Framework**: Next.js (Pages Router), React
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State**: Recoil
+- **Auth**: Firebase Auth
+- **Database**: Firestore
+- **Payments**: Stripe Checkout
+- **External API**: TMDB API
+- **Tooling**: ESLint, Prettier
 
 ---
 
 ## Project Structure
 
-```
-components/   Reusable UI components
-hooks/        Custom hooks for business logic (auth, subscription, lists)
+```text
+pages/        Next.js routing + API routes
+components/   Pure UI components (no side effects)
+hooks/        Business logic (auth, subscription, lists)
 utils/        API helpers and shared utilities
 atoms/        Recoil state definitions
-constants/    Shared constants (e.g., TMDB image base URL)
-lib/          Service helpers (Stripe, etc.)
-pages/        Next.js routing + API routes
+constants/    Shared constants (e.g. TMDB image base URL)
+lib/          Service helpers (Stripe, Firebase)
 types/        Shared TypeScript types
 ```
 
-The structure emphasizes separation of concerns and long-term maintainability.
+Design principles:
+
+- UI components never call APIs directly
+- Side effects live in hooks
+- Shared types come first
 
 ---
 
-## Recent Highlights
+## Setup
 
-The following commits best represent my current engineering practices:
+```bash
+git clone https://github.com/your-username/netflix-clone-nextjs.git
+cd netflix-clone-nextjs
+npm install
+cp .env.example .env.local   # add your keys
+npm run dev                  # http://localhost:3000
+```
 
-* feat(modal): improve trailer loading and fallback UX
-* refactor(tmdb): centralize TMDB API requests into typed helper
-* fix(auth): remove redirect race and centralize auth error handling
-* style(header): adjust responsive padding for improved layout spacing
+### Environment Variables
 
----
+```bash
+# Firebase
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
 
-## Project Evolution
+# TMDB
+NEXT_PUBLIC_TMDB_API_KEY=your_tmdb_api_key
 
-This project was originally created as a self-learning playground when I first started exploring React and Next.js.
-
-Early commits may appear informal, reflecting experimentation and exploration during the learning phase.
-
-Over the past year, I have treated this repository as a **career-transition portfolio project**, progressively improving it with:
-
-* Consistent commit conventions
-* Refactored API architecture
-* Improved authentication flow
-* UX and accessibility refinements
-* A more maintainable project structure
-
-Recent commits and features best represent my current engineering mindset and practices.
-
----
-
-## Engineering Focus
-
-Throughout this project, I focused on:
-
-* Writing code that is easy to explain in interviews
-* Handling common real-world edge cases encountered during development
-* Prioritizing clarity, maintainability, and UX over feature count
-* Treating this side project as a production-like system for learning purposes
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
+```
 
 ---
 
-## Future Improvements
+## Recent Frontend Highlights
 
-Potential next steps if this project were to be extended:
-
-* Migration to Next.js App Router
-* Component and integration testing
-* Performance analysis and optimization
-* Improved error boundary and retry strategies
+- Reduced auth redirect race conditions by introducing guarded initialization
+- Improved modal UX with explicit loading and missing-trailer fallbacks
+- Centralized TMDB requests into typed helpers to reduce UI coupling
+- Stabilized responsive header layout under scroll and resize
 
 ---
 
-## About
+## Future Improvements (If Extended)
+
+- Add component and integration tests (modal, auth guard, subscription)
+- Performance profiling and critical path optimizations
+- More robust error boundaries and retry strategies
+
+---
+
+## About Me
 
 This project is part of my transition into a frontend engineering role.
-I enjoy refining user experience details, structuring codebases for clarity, and learning through real-world implementations.
 
-**Contact:** [tinahuu321@gmail.com](mailto:tinahuu321@gmail.com) | [LinkedIn](https://www.linkedin.com/in/tina-hu-frontend) | [GitHub](https://github.com/yuting813)
+Contact: tinahuu321@gmail.com
+LinkedIn: https://www.linkedin.com/in/tina-hu-frontend
+GitHub: https://github.com/yuting813
 
 ---
