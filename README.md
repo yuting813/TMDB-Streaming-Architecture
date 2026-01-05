@@ -2,11 +2,15 @@
 
 # Netflix Clone - Frontend Engineering Streaming Platform
 
-A Netflix-inspired streaming web application built as a **career-transition frontend
-portfolio project**, emphasizing **UI architecture, predictable state flow, UX edge cases, and accessibility** over feature quantity.
+A Netflix-inspired streaming web application focused on **frontend architecture, predictable state flow, UX edge cases, and accessibility**, rather than feature quantity.
 
 Live demo: https://stream.tinahu.dev/
 Source code: https://github.com/yuting813/netflix-clone-nextjs
+
+Demo account:
+
+- Email: demo@tinahu.dev
+- Password: Demo1234!
 
 ---
 
@@ -113,10 +117,11 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 
 ## Recent Frontend Highlights
 
-- Reduced auth redirect race conditions by introducing guarded initialization
-- Improved modal UX with explicit loading and missing-trailer fallbacks
-- Centralized TMDB requests into typed helpers to reduce UI coupling
-- Stabilized responsive header layout under scroll and resize
+- Reduced misleading redirects during auth initialization, keeping the first screen stable
+- Avoided blank trailer states by providing clear loading and fallback behavior
+- Kept header layout stable under scroll and resize to preserve interaction quality
+- Maintained thumbnail layout during image fetch to reduce visual shifts
+- Lowered UI coupling by centralizing TMDB requests in typed helpers
 
 ---
 
@@ -130,7 +135,9 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 
 ## About Me
 
-This project is part of my transition into a frontend engineering role.
+This project showcases my approach to frontend system design,
+with a focus on architectural clarity, predictable state management,
+and robust UX edge case handling.
 
 Contact: tinahuu321@gmail.com
 LinkedIn: https://www.linkedin.com/in/tina-hu-frontend
