@@ -2,11 +2,15 @@
 
 # Netflix Clone - Frontend Engineering Portfolio
 
-這是一個 Netflix 風格的影音串流網站，作為 **轉職前端作品集專案**，重點放在
-**UI 架構、狀態可預測性、UX 邊界情境處理與可及性**，而非純粹堆疊功能。
+這是一個 Netflix 風格的影音串流網站，著重於 **UI 架構設計、狀態可預測性、UX 邊界情境處理與可及性**，而非單純堆疊功能。
 
 Live demo: https://stream.tinahu.dev/
 Source code: https://github.com/yuting813/netflix-clone-nextjs
+
+Demo 帳號：
+
+- Email: demo@tinahu.dev
+- Password: Demo1234!
 
 ---
 
@@ -113,11 +117,11 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 
 ## 最近的前端亮點
 
-- 修正登入流程中的 redirect race condition，避免 auth 初始化期間誤導頁
-- Modal UX 明確區分 loading / trailer 缺失 / fallback 三種狀態
-- 將 TMDB API 請求集中為 typed helpers，降低 UI 與資料層耦合
-- Header 在 scroll / resize 下避免 layout shift，維持互動穩定性
-
+- 降低登入初始化期間的誤導頁，讓首屏流程更穩定
+- 避免預告片失敗造成空白畫面，提供清楚的 loading 與 fallback
+- Header 在 scroll / resize 下保持版面穩定，維持互動品質
+- 圖片載入階段維持縮圖版面，降低視覺跳動
+- 將 TMDB 請求集中為 typed helpers，降低 UI 與資料層耦合
 
 ---
 
@@ -131,10 +135,13 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 
 ## 關於我
 
-這個專案是我轉職前端工程師的作品之一。
+這個專案用於展示我在前端工程上的設計取捨與實作方式，
+特別著重於 UI 架構、狀態管理與 UX 邊界情境處理。
 
-Contact: tinahuu321@gmail.com
-LinkedIn: https://www.linkedin.com/in/tina-hu-frontend
+Contact: tinahuu321@gmail.com  
+LinkedIn: https://www.linkedin.com/in/tina-hu-frontend  
 GitHub: https://github.com/yuting813
+
+註：此專案為個人學習與職涯轉換期間完成，著重於工程設計與可說明性。
 
 ---
