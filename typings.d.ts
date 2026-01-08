@@ -4,14 +4,14 @@ export interface Genre {
 }
 
 export interface Movie {
-	title: string;
+	title?: string; // 電影名稱
+	name?: string;  // 影集名稱
 	backdrop_path: string;
 	media_type?: string;
 	release_date?: string;
 	first_air_date: string;
 	genre_ids: number[];
 	id: number;
-	name: string;
 	origin_country: string[];
 	original_language: string;
 	original_name: string;
