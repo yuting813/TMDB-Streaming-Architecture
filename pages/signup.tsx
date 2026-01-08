@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import AuthForm from '@/components/AuthForm';
 import useAuth from '@/hooks/useAuth';
+import Footer from '@/components/Footer';
 
 type Inputs = {
 	email: string;
@@ -59,24 +60,29 @@ function Signup() {
 				priority
 				sizes='75px'
 			/>
+			<div className='flex w-full flex-grow flex-col items-center justify-center px-4'>
+				<AuthForm
+					mode='signup'
+					onSubmit={handleAuthFormSubmit}
+					loading={loading || isSubmitting || initialLoading}
+				/>
 
-			<AuthForm
-				mode='signup'
-				onSubmit={handleAuthFormSubmit}
-				loading={loading || isSubmitting || initialLoading}
-			/>
-
-			<div className='mt-6 text-center text-[gray]'>
-				已經有帳號? {'  '}
-				<button
-					type='button'
-					onClick={() => router.push('/login')}
-					className='text-white hover:underline'
-				>
-					立即登入。
-				</button>
+				<div className='mt-6 text-center text-[gray]'>
+					已經有帳號? {'  '}
+					<button
+						type='button'
+						onClick={() => router.push('/login')}
+						className='text-white hover:underline'
+					>
+						立即登入。
+					</button>
+				</div>
 			</div>
-		</div>
+			<div className='w-full fixed bottom-0'>
+				<Footer />
+			</div>
+
+		</div >
 	);
 }
 

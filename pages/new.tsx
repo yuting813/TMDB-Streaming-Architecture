@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import Row from '@/components/Row';
 import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
+import Footer from '@/components/Footer';
 
 interface Props {
 	netflixOriginals: any[];
@@ -23,6 +24,9 @@ export default function NewPage({ netflixOriginals, trending }: Props) {
 				</section>
 			</main>
 			<Modal />
+			<div className='w-full fixed bottom-0'>
+				<Footer />
+			</div>
 		</div>
 	);
 }

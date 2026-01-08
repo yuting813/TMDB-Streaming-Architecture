@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import Row from '@/components/Row';
 import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
+import Footer from '@/components/Footer';
 
 interface Props {
 	topRated: any[];
@@ -25,6 +26,9 @@ export default function MoviesPage({ topRated, action, comedy }: Props) {
 				</section>
 			</main>
 			<Modal />
+			<div className='w-full'>
+				<Footer />
+			</div>
 		</div>
 	);
 }

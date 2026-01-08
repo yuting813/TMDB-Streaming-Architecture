@@ -43,7 +43,7 @@ const AuthForm: React.FC<Props> = ({ mode, onSubmit, loading }) => {
 	return (
 		<form
 			onSubmit={handleSubmit(submit)}
-			className='relative mt-24 space-y-8 py-10 px-6 rounded bg-black/75 md:mt-0 md:max-w-md md:px-14'
+			className='relative space-y-8 py-10 px-6 rounded bg-black/75 md:max-w-md md:px-14'
 		>
 			<h1 className='text-4xl font-semibold '>{mode === 'login' ? '登入' : '註冊'}</h1>
 
@@ -90,9 +90,8 @@ const AuthForm: React.FC<Props> = ({ mode, onSubmit, loading }) => {
 
 			<button
 				disabled={loading}
-				className={`w-full rounded py-3 font-semibold ${
-					loading ? 'bg-[#e50914]/60' : 'bg-[#e50914] hover:bg-[#e50914]/80'
-				}`}
+				className={`w-full rounded py-3 font-semibold ${loading ? 'bg-[#e50914]/60' : 'bg-[#e50914] hover:bg-[#e50914]/80'
+					}`}
 			>
 				{loading ? (
 					<div className='flex items-center justify-center'>
