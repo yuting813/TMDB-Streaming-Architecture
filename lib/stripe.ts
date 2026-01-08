@@ -13,7 +13,7 @@ const payments = getStripePayments(app, {
 });
 
 const stripePromise = loadStripe(
-	'pk_test_51QogiRRsSr8qcNR4YmWmX3vnlM8W1augUrk3y5SpjGOndUk31SPLsHpQAsSBNGpWBeH8k2ObVi9Bkb9zGwKOI4zT00MB9MjFuA',
+	process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
 );
 
 const loadCheckout = async (priceId: string, userId: string) => {
