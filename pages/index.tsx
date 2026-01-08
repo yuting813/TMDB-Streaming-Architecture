@@ -6,6 +6,7 @@ import { useRecoilValue } from 'recoil';
 import { useEffect } from 'react';
 import Banner from '@/components/Banner';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import Loader from '@/components/Loader';
 import Modal from '@/components/Modal';
 import Plans from '@/components/Plans';
@@ -133,6 +134,7 @@ const Home = ({
 			</main>
 
 			{showModal && <Modal />}
+			<Footer />
 		</div>
 	);
 };

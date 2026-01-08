@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import Thumbnail from '@/components/Thumbnail';
 import { tmdbFetch } from '@/utils/request';
+import Footer from '@/components/Footer';
 
 export default function SearchPage() {
 	const router = useRouter();
@@ -61,6 +62,10 @@ export default function SearchPage() {
 				{/* Mount the Modal so it can react to Recoil state set by Thumbnail clicks */}
 				<Modal />
 			</main>
+
+			<div className='w-full bottom-0'>
+				<Footer />
+			</div>
 		</div>
 	);
 }

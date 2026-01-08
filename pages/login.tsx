@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import AuthForm from '@/components/AuthForm';
+import Footer from '@/components/Footer';
 import useAuth from '@/hooks/useAuth';
 
 type Inputs = {
@@ -63,26 +64,32 @@ function Login() {
 				sizes='75px'
 			/>
 
-			<AuthForm mode='login' onSubmit={handleAuthFormSubmit} loading={loading || isSubmitting || initialLoading} />
+			<div className='flex w-full flex-grow flex-col items-center justify-center px-4'>
+				<AuthForm mode='login' onSubmit={handleAuthFormSubmit} loading={loading || isSubmitting || initialLoading} />
 
-			<div className='mt-6 text-[gray] text-center'>
-				尚未加入Netflixx? {'  '}
-				<button
-					type='button'
-					onClick={async (e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						console.log('Navigating to signup...');
-						try {
-							await router.replace('/signup');
-						} catch (err) {
-							console.error('Navigation error:', err);
-						}
-					}}
-					className='text-white hover:underline inline-block'
-				>
-					馬上註冊。
-				</button>
+				<div className='mt-6 text-[gray] text-center'>
+					尚未加入Netflixx? {'  '}
+					<button
+						type='button'
+						onClick={async (e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							console.log('Navigating to signup...');
+							try {
+								await router.replace('/signup');
+							} catch (err) {
+								console.error('Navigation error:', err);
+							}
+						}}
+						className='text-white hover:underline inline-block'
+					>
+						馬上註冊。
+					</button>
+				</div>
+			</div>
+
+			<div className='w-full fixed bottom-0'>
+				<Footer />
 			</div>
 		</div>
 	);

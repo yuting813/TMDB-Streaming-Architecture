@@ -4,12 +4,13 @@ import Modal from '@/components/Modal';
 import Row from '@/components/Row';
 import useAuth from '@/hooks/useAuth';
 import useList from '@/hooks/useList';
+import Footer from '@/components/Footer';
 
 export default function MyListPage() {
- const { user, loading } = useAuth();
- const list = useList(user?.uid);
+	const { user, loading } = useAuth();
+	const list = useList(user?.uid);
 
- if (loading || !user) return null;
+	if (loading || !user) return null;
 
 	return (
 		<div>
@@ -30,6 +31,9 @@ export default function MyListPage() {
 				)}
 			</main>
 			<Modal />
+			<div className='w-full fixed bottom-0'>
+				<Footer />
+			</div>
 		</div>
 	);
 }
