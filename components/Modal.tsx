@@ -15,6 +15,11 @@ import useList from '../hooks/useList';
 import { Element, Genre } from '../typings';
 import { tmdbFetch } from '../utils/request';
 
+// 定義 API 回傳結構，避免使用 any
+interface MovieDetails {
+	videos: { results: Element[] };
+	genres: Genre[];
+}
 function Modal() {
 	const [showModal, setShowModal] = useRecoilState(modalState);
 	const [movie] = useRecoilState(movieState);
@@ -141,7 +146,7 @@ function Modal() {
 	/* ===========================================================
 	   Play Button
 	   =========================================================== */
-	const handlePlayClick = () => {
+	const handlePlayClick = useCallback(() => {
 		if (trailerLoading) {
 			toast('Loading trailer...', { duration: 1500, style: toastStyle });
 			return;
@@ -326,10 +331,8 @@ function Modal() {
 							</div>
 						)}
 
-					{/* =====================================================
-					   Controls Row（最重要：左三右一佈局）
-					   ===================================================== */}
-					<div className='absolute bottom-2 flex w-full items-center justify-between px-4 sm:bottom-10 sm:px-10'>
+					{/* Controls Row（重要：左三右一佈局） */}
+					<div className='absolute bottom-2 z-20 flex w-full items-center justify-between px-4 sm:bottom-10 sm:px-10'>
 						{/* 左側：Play / Add / Like */}
 						<div className='flex items-center space-x-3'>
 							{/* Play */}
@@ -378,10 +381,7 @@ function Modal() {
 						</button>
 					</div>
 				</div>
-
-				{/* =====================================================
-				   Info Section
-				   ===================================================== */}
+				{/* Movie Info */}
 				<div className='flex space-x-16 rounded-b-md bg-[#181818] px-10 py-8'>
 					<div className='space-y-6 text-lg'>
 						<div className='flex items-center space-x-2 text-sm'>
