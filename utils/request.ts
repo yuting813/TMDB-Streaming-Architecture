@@ -159,7 +159,7 @@ function mergeAbortSignals(signalA: AbortSignal, signalB: AbortSignal): AbortSig
 //-------------------------------------------------------------
 const requests = {
 	fetchTrending: `${BASE_URL}/trending/all/week`,
-	fetchNetflixOriginals: `${BASE_URL}/discover/movie?with_networks=213`,
+	fetchstreamOriginals: `${BASE_URL}/discover/movie?with_networks=213`,
 	fetchTopRated: `${BASE_URL}/movie/top_rated`,
 	fetchActionMovies: `${BASE_URL}/discover/movie?with_genres=28`,
 	fetchComedyMovies: `${BASE_URL}/discover/movie?with_genres=35`,

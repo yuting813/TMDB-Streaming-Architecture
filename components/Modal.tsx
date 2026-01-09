@@ -240,7 +240,7 @@ function Modal() {
 	}, [handleClose, showModal, handlePlayClick]);
 
 	/* ===========================================================
-	   Badge Component (Netflix 透明邊框)
+	   Badge Component (stream 透明邊框)
 	   =========================================================== */
 	const Badge = ({ children }: { children: React.ReactNode }) => (
 		<div className='mb-3 flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-amber-200 backdrop-blur-sm'>
@@ -293,43 +293,44 @@ function Modal() {
 							<div className='absolute inset-0 z-10 cursor-pointer' onClick={handlePlayClick} />
 						</div>
 					) : /* Loading State */
-						trailerLoading ? (
-							<div className='absolute inset-0 flex animate-pulse flex-col items-center justify-center rounded-t-md bg-gray-700/40 backdrop-blur-sm'>
-								<Badge>Loading trailer...</Badge>
+					trailerLoading ? (
+						<div className='absolute inset-0 flex animate-pulse flex-col items-center justify-center rounded-t-md bg-gray-700/40 backdrop-blur-sm'>
+							<Badge>Loading trailer...</Badge>
+						</div>
+					) : (
+						/* Fallback State */
+						<div className='absolute inset-0 overflow-hidden rounded-t-md'>
+							{/* Skeleton */}
+							{!posterLoaded && !posterError && (
+								<div className='absolute inset-0 animate-pulse bg-gray-700' />
+							)}
+
+							<Image
+								src={heroImageSrc}
+								alt='Fallback artwork'
+								fill
+								className={`object-cover transition-opacity duration-500 ${
+									posterLoaded ? 'opacity-100' : 'opacity-0'
+								}`}
+								onLoadingComplete={() => setPosterLoaded(true)}
+								onError={() => {
+									setPosterError(true);
+									setPosterLoaded(true);
+								}}
+							/>
+
+							<div className='absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent' />
+
+							<div className='absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center'>
+								<Badge>Trailer Unavailable</Badge>
+								<p className='max-w-xl text-sm text-gray-200'>
+									{
+										"We couldn't find a trailer for this title. You can still add it to My List and watch later."
+									}
+								</p>
 							</div>
-						) : (
-							/* Fallback State */
-							<div className='absolute inset-0 overflow-hidden rounded-t-md'>
-								{/* Skeleton */}
-								{!posterLoaded && !posterError && (
-									<div className='absolute inset-0 animate-pulse bg-gray-700' />
-								)}
-
-								<Image
-									src={heroImageSrc}
-									alt='Fallback artwork'
-									fill
-									className={`object-cover transition-opacity duration-500 ${posterLoaded ? 'opacity-100' : 'opacity-0'
-										}`}
-									onLoadingComplete={() => setPosterLoaded(true)}
-									onError={() => {
-										setPosterError(true);
-										setPosterLoaded(true);
-									}}
-								/>
-
-								<div className='absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent' />
-
-								<div className='absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center'>
-									<Badge>Trailer Unavailable</Badge>
-									<p className='max-w-xl text-sm text-gray-200'>
-										{
-											"We couldn't find a trailer for this title. You can still add it to My List and watch later."
-										}
-									</p>
-								</div>
-							</div>
-						)}
+						</div>
+					)}
 
 					{/* Controls Row（重要：左三右一佈局） */}
 					<div className='absolute bottom-2 z-20 flex w-full items-center justify-between px-4 sm:bottom-10 sm:px-10'>

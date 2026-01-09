@@ -4,8 +4,8 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import AuthForm from '@/components/AuthForm';
-import useAuth from '@/hooks/useAuth';
 import Footer from '@/components/Footer';
+import useAuth from '@/hooks/useAuth';
 
 type Inputs = {
 	email: string;
@@ -41,7 +41,7 @@ function Signup() {
 				<title>Sign up for Stream -Stream</title>
 			</Head>
 			<Image
-				src='/loginImg.webp'
+				src='/stream-login-bg.webp'
 				alt='Signup page background image'
 				className='absolute inset-0 -z-10 hidden h-screen w-screen object-cover brightness-[50%] sm:inline'
 				fill
@@ -77,11 +77,10 @@ function Signup() {
 					</button>
 				</div>
 			</div>
-			<div className='w-full bottom-0'>
+			<div className='bottom-0 w-full'>
 				<Footer />
 			</div>
-
-		</div >
+		</div>
 	);
 }
 

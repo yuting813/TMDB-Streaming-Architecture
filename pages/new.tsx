@@ -1,30 +1,30 @@
 import Head from 'next/head';
+import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import Row from '@/components/Row';
 import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
-import Footer from '@/components/Footer';
 
 interface Props {
-	netflixOriginals: any[];
+	streamOriginals: any[];
 	trending: any[];
 }
 
-export default function NewPage({ netflixOriginals, trending }: Props) {
+export default function NewPage({ streamOriginals, trending }: Props) {
 	return (
-		<div className='flex flex-col min-h-screen'>
+		<div className='flex min-h-screen flex-col'>
 			<Head>
 				<title>New & Popular - Stream</title>
 			</Head>
 			<Header />
-			<main className='m-10 px-4 pt-24 flex-grow'>
+			<main className='m-10 flex-grow px-4 pt-24'>
 				<section className='space-y-8'>
-					<Row title='New & Popular' movies={netflixOriginals} orientation='poster' />
+					<Row title='New & Popular' movies={streamOriginals} orientation='poster' />
 					<Row title='Trending Now' movies={trending} orientation='poster' />
 				</section>
 			</main>
 			<Modal />
-			<div className='w-full bottom-0'>
+			<div className='bottom-0 w-full'>
 				<Footer />
 			</div>
 		</div>
@@ -33,14 +33,16 @@ export default function NewPage({ netflixOriginals, trending }: Props) {
 
 export async function getStaticProps() {
 	try {
-		const [netflixRes, trendingRes] = await Promise.all([
-			tmdbFetch<TmdbResponse<any>>(requests.fetchNetflixOriginals, { params: { language: 'en-US' } }),
+		const [streamRes, trendingRes] = await Promise.all([
+			tmdbFetch<TmdbResponse<any>>(requests.fetchstreamOriginals, {
+				params: { language: 'en-US' },
+			}),
 			tmdbFetch<TmdbResponse<any>>(requests.fetchTrending, { params: { language: 'en-US' } }),
 		]);
 
 		return {
 			props: {
-				netflixOriginals: netflixRes?.results ?? [],
+				streamOriginals: streamRes?.results ?? [],
 				trending: trendingRes?.results ?? [],
 			},
 			revalidate: 3600,

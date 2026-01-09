@@ -5,8 +5,8 @@ import { useRouter } from 'next/router';
 import { useRecoilValue } from 'recoil';
 import { useEffect } from 'react';
 import Banner from '@/components/Banner';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import Loader from '@/components/Loader';
 import Modal from '@/components/Modal';
 import Plans from '@/components/Plans';
@@ -20,7 +20,7 @@ import { Movie } from '@/typings';
 import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
 
 interface Props {
-	netflixOriginals: Movie[];
+	streamOriginals: Movie[];
 	trendingNow: Movie[];
 	topRated: Movie[];
 	actionMovies: Movie[];
@@ -32,7 +32,7 @@ interface Props {
 }
 
 const Home = ({
-	netflixOriginals,
+	streamOriginals,
 	actionMovies,
 	comedyMovies,
 	documentaries,
@@ -116,7 +116,7 @@ const Home = ({
 
 			<Header />
 			<main className='relative space-y-24 pb-24 pl-4 lg:pl-16'>
-				<Banner netflixOriginals={netflixOriginals} />
+				<Banner streamOriginals={streamOriginals} />
 
 				<section className='md:space-y-10'>
 					<Row title='Trending Now' movies={trendingNow} orientation='poster' />
@@ -170,7 +170,7 @@ export const getStaticProps = async () => {
 
 		// 獲取電影數據
 		const [
-			netflixOriginalsRes,
+			streamOriginalsRes,
 			trendingNowRes,
 			topRatedRes,
 			actionMoviesRes,
@@ -179,7 +179,7 @@ export const getStaticProps = async () => {
 			romanceMoviesRes,
 			documentariesRes,
 		] = await Promise.all([
-			tmdbFetch<TmdbResponse<Movie>>(requests.fetchNetflixOriginals, {
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchstreamOriginals, {
 				params: { language: 'en-US' },
 			}),
 			tmdbFetch<TmdbResponse<Movie>>(requests.fetchTrending, { params: { language: 'en-US' } }),
@@ -197,7 +197,7 @@ export const getStaticProps = async () => {
 
 		return {
 			props: {
-				netflixOriginals: netflixOriginalsRes?.results ?? [],
+				streamOriginals: streamOriginalsRes?.results ?? [],
 				trendingNow: trendingNowRes?.results ?? [],
 				topRated: topRatedRes?.results ?? [],
 				actionMovies: actionMoviesRes?.results ?? [],
@@ -213,7 +213,7 @@ export const getStaticProps = async () => {
 		console.error('Error fetching data:', error);
 		return {
 			props: {
-				netflixOriginals: [],
+				streamOriginals: [],
 				trendingNow: [],
 				topRated: [],
 				actionMovies: [],
