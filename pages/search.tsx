@@ -46,6 +46,7 @@ export default function SearchPage() {
 		<div>
 			<Head>
 				<title>Search - {q}</title>
+				<title>Search - Stream</title>
 			</Head>
 			<Header />
 			<main className='px-4 pt-24'>

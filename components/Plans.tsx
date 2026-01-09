@@ -42,7 +42,7 @@ const Plans = ({ products }: Props) => {
 		<div>
 			<Head>
 				{' '}
-				<title>Netflixx</title>
+				<title>Stream</title>
 				<link rel='icon' href='./logo.svg' />
 			</Head>
 
@@ -83,9 +83,8 @@ const Plans = ({ products }: Props) => {
 						{products.map((product) => (
 							<div
 								key={product.id}
-								className={`planBox relative ${
-									selectedPlan?.id === product.id ? 'opacity-100' : 'opacity-60'
-								} cursor-pointer  transition-opacity duration-200`}
+								className={`planBox relative ${selectedPlan?.id === product.id ? 'opacity-100' : 'opacity-60'
+									} cursor-pointer  transition-opacity duration-200`}
 								onClick={() => setSelectedPlan(product)}
 							>
 								{product.name}

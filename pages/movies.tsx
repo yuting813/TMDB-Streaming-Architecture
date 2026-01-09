@@ -16,6 +16,7 @@ export default function MoviesPage({ topRated, action, comedy }: Props) {
 		<div>
 			<Head>
 				<title>Movies</title>
+				<title>Movies - Stream</title>
 			</Head>
 			<Header />
 			<main className='m-10 px-4 pt-24'>

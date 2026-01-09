@@ -41,8 +41,7 @@ function Login() {
 	return (
 		<div className='relative flex h-screen w-screen flex-col bg-black md:items-center md:justify-center md:bg-transparent'>
 			<Head>
-				<title>Netflixx</title>
-				<link rel='icon' href='/logo.svg' />
+				<title>Sign in to Stream- Stream</title>
 			</Head>
 			<Image
 				src='/loginImg.webp'
@@ -68,7 +67,7 @@ function Login() {
 				<AuthForm mode='login' onSubmit={handleAuthFormSubmit} loading={loading || isSubmitting || initialLoading} />
 
 				<div className='mt-6 text-[gray] text-center'>
-					尚未加入Netflixx? {'  '}
+					尚未加入Stream? {'  '}
 					<button
 						type='button'
 						onClick={async (e) => {

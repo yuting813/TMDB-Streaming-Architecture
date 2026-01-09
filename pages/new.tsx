@@ -15,6 +15,7 @@ export default function NewPage({ netflixOriginals, trending }: Props) {
 		<div>
 			<Head>
 				<title>New & Popular</title>
+				<title>New & Popular - Stream</title>
 			</Head>
 			<Header />
 			<main className='m-10 px-4 pt-24'>
