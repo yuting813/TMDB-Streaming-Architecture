@@ -8,10 +8,10 @@ import { baseUrl } from '@/constants/movie';
 import { Movie } from '@/typings';
 
 interface Props {
-	netflixOriginals: Movie[];
+	streamOriginals: Movie[];
 }
 
-function Banner({ netflixOriginals }: Props) {
+function Banner({ streamOriginals }: Props) {
 	const [movie, setMovie] = useState<Movie | null>(null);
 	// We only need the setters here; discard the first tuple item to avoid unused var lint
 	const [, setShowModal] = useRecoilState(modalState);
@@ -21,8 +21,8 @@ function Banner({ netflixOriginals }: Props) {
 	const isMobile = useIsMobile();
 
 	useEffect(() => {
-		setMovie(netflixOriginals[Math.floor(Math.random() * netflixOriginals.length)]);
-	}, [netflixOriginals]);
+		setMovie(streamOriginals[Math.floor(Math.random() * streamOriginals.length)]);
+	}, [streamOriginals]);
 
 	const imagePath = isMobile
 		? movie?.poster_path || movie?.backdrop_path

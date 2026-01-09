@@ -44,9 +44,9 @@ function Login() {
 				<title>Sign in to Stream- Stream</title>
 			</Head>
 			<Image
-				src='/loginImg.webp'
+				src='/stream-login-bg.webp'
 				alt='Login page background image'
-				className='-z-10 hidden brightness-[50%] sm:inline object-cover absolute inset-0 h-screen w-screen '
+				className='absolute inset-0 -z-10 hidden h-screen w-screen object-cover brightness-[50%] sm:inline'
 				fill
 				sizes='100vw'
 				priority
@@ -57,16 +57,20 @@ function Login() {
 				src='/logo.svg'
 				width={75}
 				height={75}
-				className='absolute left-4 top-4  cursor-pointer object-contain md:left-10 md:top-6 '
+				className='absolute left-4 top-4 cursor-pointer object-contain md:left-10 md:top-6'
 				alt='logo'
 				priority
 				sizes='75px'
 			/>
 
 			<div className='flex w-full flex-grow flex-col items-center justify-center px-4'>
-				<AuthForm mode='login' onSubmit={handleAuthFormSubmit} loading={loading || isSubmitting || initialLoading} />
+				<AuthForm
+					mode='login'
+					onSubmit={handleAuthFormSubmit}
+					loading={loading || isSubmitting || initialLoading}
+				/>
 
-				<div className='mt-6 text-[gray] text-center'>
+				<div className='mt-6 text-center text-[gray]'>
 					尚未加入Stream? {'  '}
 					<button
 						type='button'
@@ -80,14 +84,14 @@ function Login() {
 								console.error('Navigation error:', err);
 							}
 						}}
-						className='text-white hover:underline inline-block'
+						className='inline-block text-white hover:underline'
 					>
 						馬上註冊。
 					</button>
 				</div>
 			</div>
 
-			<div className='w-full bottom-0'>
+			<div className='bottom-0 w-full'>
 				<Footer />
 			</div>
 		</div>
