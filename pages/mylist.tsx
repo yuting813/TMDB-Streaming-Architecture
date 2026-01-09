@@ -13,12 +13,12 @@ export default function MyListPage() {
 	if (loading || !user) return null;
 
 	return (
-		<div>
+		<div className='flex flex-col min-h-screen'>
 			<Head>
 				<title>My List</title>
 			</Head>
 			<Header />
-			<main className='m-10 px-4 pt-24'>
+			<main className='m-10 px-4 pt-24 flex-grow'>
 				<p className='mb-1 ml-1 text-xl font-bold'>My List</p>
 				{list.length === 0 ? (
 					<p className='text-gray-400'>
@@ -31,7 +31,7 @@ export default function MyListPage() {
 				)}
 			</main>
 			<Modal />
-			<div className='w-full fixed bottom-0'>
+			<div className='w-full bottom-0'>
 				<Footer />
 			</div>
 		</div>
