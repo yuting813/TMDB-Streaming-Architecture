@@ -38,8 +38,7 @@ function Signup() {
 	return (
 		<div className='relative flex h-screen w-screen flex-col bg-black md:items-center md:justify-center md:bg-transparent'>
 			<Head>
-				<title>註冊 - Netflixx</title>
-				<link rel='icon' href='/logo.svg' />
+				<title>Sign up for Stream -Stream</title>
 			</Head>
 			<Image
 				src='/loginImg.webp'
@@ -78,7 +77,7 @@ function Signup() {
 					</button>
 				</div>
 			</div>
-			<div className='w-full fixed bottom-0'>
+			<div className='w-full bottom-0'>
 				<Footer />
 			</div>
 

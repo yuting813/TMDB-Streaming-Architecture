@@ -43,12 +43,12 @@ export default function SearchPage() {
 	}, [q]);
 
 	return (
-		<div>
+		<div className='flex flex-col min-h-screen'>
 			<Head>
-				<title>Search - {q}</title>
+				<title>Search - Stream</title>
 			</Head>
 			<Header />
-			<main className='px-4 pt-24'>
+			<main className='px-4 pt-24 flex-grow'>
 				<h1 className='mb-4 text-2xl font-semibold'>Search results for `{q}`</h1>
 				{loading && <p>Loading...</p>}
 				{!loading && results.length === 0 && <p>No results found.</p>}

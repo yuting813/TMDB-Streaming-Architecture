@@ -6,8 +6,11 @@ export default function Document() {
 			<Head>
 				<meta
 					name="description"
-					content="This is a Netflix Clone Portfolio Project for educational purposes only. NOT the real Netflix."
+					content="Stream - A premium Netflix Clone portfolio project showcasing modern web development with Next.js, Firebase, and Stripe. Educational purpose only."
 				/>
+				{/* Favicon / Icons - Global (Best placed in _document.tsx) */}
+				<link rel='icon' href='/logo.svg' type='image/svg+xml' />
+				<link rel='apple-touch-icon' href='/logo.png' />
 			</Head>
 			<body>
 				<Main />

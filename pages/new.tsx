@@ -12,19 +12,19 @@ interface Props {
 
 export default function NewPage({ netflixOriginals, trending }: Props) {
 	return (
-		<div>
+		<div className='flex flex-col min-h-screen'>
 			<Head>
-				<title>New & Popular</title>
+				<title>New & Popular - Stream</title>
 			</Head>
 			<Header />
-			<main className='m-10 px-4 pt-24'>
+			<main className='m-10 px-4 pt-24 flex-grow'>
 				<section className='space-y-8'>
 					<Row title='New & Popular' movies={netflixOriginals} orientation='poster' />
 					<Row title='Trending Now' movies={trending} orientation='poster' />
 				</section>
 			</main>
 			<Modal />
-			<div className='w-full fixed bottom-0'>
+			<div className='w-full bottom-0'>
 				<Footer />
 			</div>
 		</div>

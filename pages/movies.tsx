@@ -13,12 +13,12 @@ interface Props {
 
 export default function MoviesPage({ topRated, action, comedy }: Props) {
 	return (
-		<div>
+		<div className='flex flex-col min-h-screen'>
 			<Head>
-				<title>Movies</title>
+				<title>Movies - Stream</title>
 			</Head>
 			<Header />
-			<main className='m-10 px-4 pt-24'>
+			<main className='m-10 px-4 pt-24 flex-grow'>
 				<section className='space-y-8'>
 					<Row title='Top Rated' movies={topRated} orientation='poster' />
 					<Row title='Action Movies' movies={action} orientation='poster' />
@@ -26,7 +26,7 @@ export default function MoviesPage({ topRated, action, comedy }: Props) {
 				</section>
 			</main>
 			<Modal />
-			<div className='w-full'>
+			<div className='w-full bottom-0'>
 				<Footer />
 			</div>
 		</div>

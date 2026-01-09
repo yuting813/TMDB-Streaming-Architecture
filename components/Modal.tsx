@@ -15,6 +15,11 @@ import useList from '../hooks/useList';
 import { Element, Genre } from '../typings';
 import { tmdbFetch } from '../utils/request';
 
+// 定義 API 回傳結構，避免使用 any
+interface MovieDetails {
+	videos: { results: Element[] };
+	genres: Genre[];
+}
 function Modal() {
 	const [showModal, setShowModal] = useRecoilState(modalState);
 	const [movie] = useRecoilState(movieState);
@@ -141,7 +146,7 @@ function Modal() {
 	/* ===========================================================
 	   Play Button
 	   =========================================================== */
-	const handlePlayClick = () => {
+	const handlePlayClick = useCallback(() => {
 		if (trailerLoading) {
 			toast('Loading trailer...', { duration: 1500, style: toastStyle });
 			return;
@@ -159,7 +164,11 @@ function Modal() {
 			}
 			return next;
 		});
-	};
+
+		requestAnimationFrame(() => {
+			modalRef.current?.focus();
+		});
+	}, [trailerLoading, trailer]);
 
 	const handleThumbUpClick = () => {
 		setLiked((prev) => {
@@ -215,14 +224,20 @@ function Modal() {
 		return () => window.removeEventListener('keydown', handleTab);
 	}, [showModal]);
 
-	/* ESC to close */
+	/* ESC and Space to close/toggle */
 	useEffect(() => {
 		const onKey = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') handleClose();
+			if (e.key === 'Escape') {
+				handleClose();
+			} else if (e.code === 'Space') {
+				// Prevent scrolling
+				e.preventDefault();
+				handlePlayClick();
+			}
 		};
 		if (showModal) window.addEventListener('keydown', onKey);
 		return () => window.removeEventListener('keydown', onKey);
-	}, [handleClose, showModal]);
+	}, [handleClose, showModal, handlePlayClick]);
 
 	/* ===========================================================
 	   Badge Component (Netflix 透明邊框)
@@ -242,7 +257,7 @@ function Modal() {
 			onClose={handleClose}
 			className='fixed !top-7 left-0 right-0 z-50 mx-auto w-full max-w-5xl overflow-hidden overflow-y-scroll rounded-md scrollbar-hide'
 		>
-			<div ref={modalRef}>
+			<div ref={modalRef} tabIndex={-1}>
 				<Toaster position='bottom-center' />
 
 				{/* Close Button */}
@@ -254,71 +269,70 @@ function Modal() {
 					<XIcon className='h-6 w-6' />
 				</button>
 
-				{/* =====================================================
-				   Trailer / Loading / Fallback
-				   ===================================================== */}
+				{/* Trailer / Loading / Fallback */}
 				<div className='relative bg-black pt-[56.25%]'>
 					{/* Trailer Available */}
 					{hasTrailer ? (
-						<ReactPlayer
-							url={`https://www.youtube.com/watch?v=${trailer}`}
-							width='100%'
-							height='100%'
-							style={{ position: 'absolute', top: 0, left: 0 }}
-							playing={playing}
-							muted={muted}
-							onPlay={() => {
-								setPlaying(true);
-								setIsPlayingBtn(true);
-								setTimeout(() => setIsPlayingBtn(false), 1200);
-							}}
-							onPause={() => setPlaying(false)}
-							onEnded={() => setPlaying(false)}
-						/>
-					) : /* Loading State */
-					trailerLoading ? (
-						<div className='absolute inset-0 flex animate-pulse flex-col items-center justify-center rounded-t-md bg-gray-700/40 backdrop-blur-sm'>
-							<Badge>Loading trailer...</Badge>
-						</div>
-					) : (
-						/* Fallback State */
-						<div className='absolute inset-0 overflow-hidden rounded-t-md'>
-							{/* Skeleton */}
-							{!posterLoaded && !posterError && (
-								<div className='absolute inset-0 animate-pulse bg-gray-700' />
-							)}
-
-							<Image
-								src={heroImageSrc}
-								alt='Fallback artwork'
-								fill
-								className={`object-cover transition-opacity duration-500 ${
-									posterLoaded ? 'opacity-100' : 'opacity-0'
-								}`}
-								onLoadingComplete={() => setPosterLoaded(true)}
-								onError={() => {
-									setPosterError(true);
-									setPosterLoaded(true);
+						<div className='absolute left-0 top-0 z-0 h-full w-full'>
+							<ReactPlayer
+								url={`https://www.youtube.com/watch?v=${trailer}`}
+								width='100%'
+								height='100%'
+								style={{ position: 'absolute', top: 0, left: 0 }}
+								playing={playing}
+								muted={muted}
+								onPlay={() => {
+									setPlaying(true);
+									setIsPlayingBtn(true);
+									setTimeout(() => setIsPlayingBtn(false), 1200);
 								}}
+								onPause={() => setPlaying(false)}
+								onEnded={() => setPlaying(false)}
 							/>
-
-							<div className='absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent' />
-
-							<div className='absolute inset-0 flex flex-col items-center justify-center px-6 text-center'>
-								<Badge>Trailer Unavailable</Badge>
-								<p className='max-w-xl text-sm text-gray-200'>
-									{
-										"We couldn't find a trailer for this title. You can still add it to My List and watch later."
-									}
-								</p>
-							</div>
+							{/* Transparent overlay to prevent iframe focus stealing */}
+							<div className='absolute inset-0 z-10 cursor-pointer' onClick={handlePlayClick} />
 						</div>
-					)}
+					) : /* Loading State */
+						trailerLoading ? (
+							<div className='absolute inset-0 flex animate-pulse flex-col items-center justify-center rounded-t-md bg-gray-700/40 backdrop-blur-sm'>
+								<Badge>Loading trailer...</Badge>
+							</div>
+						) : (
+							/* Fallback State */
+							<div className='absolute inset-0 overflow-hidden rounded-t-md'>
+								{/* Skeleton */}
+								{!posterLoaded && !posterError && (
+									<div className='absolute inset-0 animate-pulse bg-gray-700' />
+								)}
 
-					{/* =====================================================
-					   Controls Row（最重要：左三右一佈局）
-					   ===================================================== */}
-					<div className='absolute bottom-2 flex w-full items-center justify-between px-4 sm:bottom-10 sm:px-10'>
+								<Image
+									src={heroImageSrc}
+									alt='Fallback artwork'
+									fill
+									className={`object-cover transition-opacity duration-500 ${posterLoaded ? 'opacity-100' : 'opacity-0'
+										}`}
+									onLoadingComplete={() => setPosterLoaded(true)}
+									onError={() => {
+										setPosterError(true);
+										setPosterLoaded(true);
+									}}
+								/>
+
+								<div className='absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent' />
+
+								<div className='absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center'>
+									<Badge>Trailer Unavailable</Badge>
+									<p className='max-w-xl text-sm text-gray-200'>
+										{
+											"We couldn't find a trailer for this title. You can still add it to My List and watch later."
+										}
+									</p>
+								</div>
+							</div>
+						)}
+
+					{/* Controls Row（重要：左三右一佈局） */}
+					<div className='absolute bottom-2 z-20 flex w-full items-center justify-between px-4 sm:bottom-10 sm:px-10'>
 						{/* 左側：Play / Add / Like */}
 						<div className='flex items-center space-x-3'>
 							{/* Play */}
@@ -367,10 +381,7 @@ function Modal() {
 						</button>
 					</div>
 				</div>
-
-				{/* =====================================================
-				   Info Section
-				   ===================================================== */}
+				{/* Movie Info */}
 				<div className='flex space-x-16 rounded-b-md bg-[#181818] px-10 py-8'>
 					<div className='space-y-6 text-lg'>
 						<div className='flex items-center space-x-2 text-sm'>
