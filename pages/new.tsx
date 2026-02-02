@@ -3,11 +3,12 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import Row from '@/components/Row';
+import { Movie } from '@/typings';
 import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
 
 interface Props {
-	streamOriginals: any[];
-	trending: any[];
+	streamOriginals: Movie[];
+	trending: Movie[];
 }
 
 export default function NewPage({ streamOriginals, trending }: Props) {
@@ -34,10 +35,10 @@ export default function NewPage({ streamOriginals, trending }: Props) {
 export async function getStaticProps() {
 	try {
 		const [streamRes, trendingRes] = await Promise.all([
-			tmdbFetch<TmdbResponse<any>>(requests.fetchstreamOriginals, {
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchstreamOriginals, {
 				params: { language: 'en-US' },
 			}),
-			tmdbFetch<TmdbResponse<any>>(requests.fetchTrending, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchTrending, { params: { language: 'en-US' } }),
 		]);
 
 		return {

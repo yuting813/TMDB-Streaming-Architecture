@@ -42,16 +42,19 @@ function Signup() {
 			</Head>
 
 			{/* Portfolio Disclaimer Banner */}
-			<div className='fixed left-0 right-0 top-0 z-50 bg-black/80 backdrop-blur-sm border-b border-white/10 px-4 py-3 text-center text-xs md:text-sm font-light tracking-wide text-gray-300 shadow-lg'>
+			<div className='fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-black/80 px-4 py-3 text-center text-xs font-light tracking-wide text-gray-300 shadow-lg backdrop-blur-sm md:text-sm'>
 				<span className='hidden sm:inline'>This is a </span>
 				<span className='font-bold text-white'>Portfolio Demo</span>
 				{' — '}
-				<span className='block sm:inline'>NOT affiliated with Netflix<span className='hidden sm:inline'> or any streaming service</span></span>
+				<span className='block sm:inline'>
+					NOT affiliated with Netflix
+					<span className='hidden sm:inline'> or any streaming service</span>
+				</span>
 			</div>
 			<Image
 				src='/stream-login-bg.webp'
 				alt='Signup page background image'
-				className='absolute inset-0 -z-10 hidden h-screen w-screen object-cover brightness-[35%] blur-[2px] sm:inline'
+				className='absolute inset-0 -z-10 hidden h-screen w-screen object-cover blur-[8px] brightness-[35%] sm:inline'
 				fill
 				sizes='100vw'
 				priority
@@ -67,7 +70,7 @@ function Signup() {
 				priority
 				sizes='75px'
 			/>
-			<div className='flex w-full flex-grow flex-col items-center justify-center px-4 mt-28 md:mt-0'>
+			<div className='mt-28 flex w-full flex-grow flex-col items-center justify-center px-4 md:mt-0'>
 				<AuthForm
 					mode='signup'
 					onSubmit={handleAuthFormSubmit}

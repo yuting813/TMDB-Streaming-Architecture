@@ -15,11 +15,17 @@ import useList from '../hooks/useList';
 import { Element, Genre } from '../typings';
 import { tmdbFetch } from '../utils/request';
 
-// 定義 API 回傳結構，避免使用 any
-interface MovieDetails {
-	videos: { results: Element[] };
-	genres: Genre[];
-}
+// Moved toastStyle outside to avoid dependency issues
+const toastStyle = {
+	background: 'white',
+	color: 'black',
+	fontWeight: 'bold',
+	fontSize: '16px',
+	padding: '15px',
+	borderRadius: '9999px',
+	maxWidth: '1000px',
+};
+
 function Modal() {
 	const [showModal, setShowModal] = useRecoilState(modalState);
 	const [movie] = useRecoilState(movieState);
@@ -32,8 +38,6 @@ function Modal() {
 	const [genres, setGenres] = useState<Genre[]>([]);
 	const [muted, setMuted] = useState(true);
 	const [addedToList, setAddedToList] = useState(false);
-
-	const [isPlayingBtn, setIsPlayingBtn] = useState(false);
 	const [playing, setPlaying] = useState(true);
 	const [liked, setLiked] = useState(false);
 
@@ -51,16 +55,6 @@ function Modal() {
 			? '/fallback-image.webp'
 			: `https://image.tmdb.org/t/p/w780${posterPath}`;
 
-	const toastStyle = {
-		background: 'white',
-		color: 'black',
-		fontWeight: 'bold',
-		fontSize: '16px',
-		padding: '15px',
-		borderRadius: '9999px',
-		maxWidth: '1000px',
-	};
-
 	/* ===========================================================
 	   Fetch Trailer + Lifecycle Safe
 	   =========================================================== */
@@ -75,7 +69,10 @@ function Modal() {
 		setPlaying(true);
 
 		async function fetchMovie() {
-			const data = await tmdbFetch<any>(
+			const data = await tmdbFetch<{
+				videos: { results: Element[] };
+				genres: Genre[];
+			}>( // 定義 API 回傳結構，避免使用 any
 				`/${currentMovie.media_type === 'tv' ? 'tv' : 'movie'}/${currentMovie.id}`,
 				{
 					params: {
@@ -159,8 +156,7 @@ function Modal() {
 		setPlaying((prev) => {
 			const next = !prev;
 			if (next) {
-				setIsPlayingBtn(true);
-				setTimeout(() => setIsPlayingBtn(false), 1200);
+				// removed isPlayingBtn logic
 			}
 			return next;
 		});
@@ -283,8 +279,6 @@ function Modal() {
 								muted={muted}
 								onPlay={() => {
 									setPlaying(true);
-									setIsPlayingBtn(true);
-									setTimeout(() => setIsPlayingBtn(false), 1200);
 								}}
 								onPause={() => setPlaying(false)}
 								onEnded={() => setPlaying(false)}
