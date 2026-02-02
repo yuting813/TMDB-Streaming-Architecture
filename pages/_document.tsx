@@ -6,7 +6,7 @@ export default function Document() {
 			<Head>
 				<meta
 					name='description'
-					content='Stream - A premium stream Clone portfolio project showcasing modern web development with Next.js, Firebase, and Stripe. Educational purpose only.'
+					content='Stream - Frontend Engineering Portfolio by Tina Hu. Educational demonstration project showcasing Next.js, Firebase, Stripe integration. NOT a commercial service.'
 				/>
 				<link rel='icon' href='/logo.svg' type='image/svg+xml' />
 				<link rel='apple-touch-icon' href='/logo.png' />
