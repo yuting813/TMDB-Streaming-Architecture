@@ -22,14 +22,25 @@ const ERROR_MAP: Record<string, string> = {
 	'auth/invalid-email': '信箱格式不正確',
 };
 
+// Demo account credentials
+const DEMO_EMAIL = 'demo@tinahu.dev';
+const DEMO_PASSWORD = 'Demo1234!';
+
 const AuthForm: React.FC<Props> = ({ mode, onSubmit, loading }) => {
 	const { error: authError } = useAuth();
 
 	const {
 		register,
 		handleSubmit,
+		setValue,
 		formState: { errors },
 	} = useForm<Inputs>();
+
+	// One-click demo account fill
+	const handleFillDemo = () => {
+		setValue('email', DEMO_EMAIL);
+		setValue('password', DEMO_PASSWORD);
+	};
 
 	const errorMessage = useMemo(() => {
 		if (!authError) return '';
@@ -46,6 +57,26 @@ const AuthForm: React.FC<Props> = ({ mode, onSubmit, loading }) => {
 			className='relative space-y-8 py-10 px-6 rounded bg-black/75 md:max-w-md md:px-14'
 		>
 			<h1 className='text-4xl font-semibold '>{mode === 'login' ? '登入' : '註冊'}</h1>
+
+			{/* Demo Account Info Box - for Safe Browsing compliance */}
+			{mode === 'login' && (
+				<div className='rounded-lg border border-red-500/30 bg-red-900/10 p-4 text-sm'>
+					<p className='mb-2 flex items-center gap-2 font-semibold text-[#e50914]'>
+						Demo Account (Portfolio Project)
+					</p>
+					<div className='space-y-1 text-gray-300'>
+						<p>Email: <code className='rounded bg-black/30 px-1'>{DEMO_EMAIL}</code></p>
+						<p>Password: <code className='rounded bg-black/30 px-1'>{DEMO_PASSWORD}</code></p>
+					</div>
+					<button
+						type='button'
+						onClick={handleFillDemo}
+						className='mt-3 w-full rounded bg-[#e50914] py-2 text-sm font-medium text-white transition hover:bg-[#b2070f]'
+					>
+						Use Demo Account
+					</button>
+				</div>
+			)}
 
 			<div className='space-y-4'>
 				<label className='inline-block w-full'>

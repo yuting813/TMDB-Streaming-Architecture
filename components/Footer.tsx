@@ -5,12 +5,12 @@ function Footer() {
 				<p className='font-semibold text-gray-400'>
 					DISCLAIMER: This is a Portfolio Project for Educational Purposes Only
 				</p>
-				<p>
+					<p>
 					This website is an educational portfolio project created to demonstrate full-stack
 					development skills. It is NOT a commercial service and is NOT affiliated with, endorsed
 					by, or associated with any official streaming platforms or existing media corporations.
 				</p>
-				<p>Please DO NOT enter real credentials. No payment is required or processed.</p>
+				<p>⚠️ Demo credentials are provided above — No real personal data is collected or stored.</p>
 				<p className='mt-2'>&copy; {new Date().getFullYear()} - Built by Tina Hu</p>
 			</div>
 		</footer>
