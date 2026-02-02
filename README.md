@@ -93,7 +93,8 @@ types/          # Global TypeScript types and interfaces
 ## Quality Assurance
 
 - **CI/CD**: Automated deployment via Vercel.
-- **Testing**: Implemented **Jest** and **React Testing Library** for unit testing critical business logic (e.g., Subscription Hooks), ensuring reliability of core revenue-driving features.
+- **Testing**: Implemented **Jest** and **React Testing Library** for unit testing critical business logic (e.g., useSubscription), ensuring robust handling of loading, error, and permission states.
+
 - **Code Standards**: Configured Pre-commit hooks to enforce ESLint and Prettier checks, ensuring code consistency and quality.
 
 ---
@@ -135,6 +136,8 @@ npm run test
 
 ---
 
+##About Me
+
 This project demonstrates how I translate my analytical logic from a procurement career into systematic frontend engineering.
 
 - **Email**: tinahuu321@gmail.com
@@ -142,3 +145,6 @@ This project demonstrates how I translate my analytical logic from a procurement
 - **GitHub**: [yuting813](https://github.com/yuting813)
 
 Note: This project was completed during my career transition to showcase engineering decisions and architectural clarity.
+
+> **Educational Purpose Disclaimer**
+> This project is for portfolio demonstration and educational purposes only. It is **NOT** a commercial product and is not affiliated with Netflix or any streaming service. All movie data is sourced from [TMDB API](https://www.themoviedb.org/).
