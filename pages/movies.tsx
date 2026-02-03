@@ -1,24 +1,25 @@
 import Head from 'next/head';
+import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import Row from '@/components/Row';
+import { Movie } from '@/typings';
 import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
-import Footer from '@/components/Footer';
 
 interface Props {
-	topRated: any[];
-	action: any[];
-	comedy: any[];
+	topRated: Movie[];
+	action: Movie[];
+	comedy: Movie[];
 }
 
 export default function MoviesPage({ topRated, action, comedy }: Props) {
 	return (
-		<div className='flex flex-col min-h-screen'>
+		<div className='flex min-h-screen flex-col'>
 			<Head>
 				<title>Movies - Stream</title>
 			</Head>
 			<Header />
-			<main className='m-10 px-4 pt-24 flex-grow'>
+			<main className='m-10 flex-grow px-4 pt-24'>
 				<section className='space-y-8'>
 					<Row title='Top Rated' movies={topRated} orientation='poster' />
 					<Row title='Action Movies' movies={action} orientation='poster' />
@@ -26,7 +27,7 @@ export default function MoviesPage({ topRated, action, comedy }: Props) {
 				</section>
 			</main>
 			<Modal />
-			<div className='w-full bottom-0'>
+			<div className='bottom-0 w-full'>
 				<Footer />
 			</div>
 		</div>
@@ -36,9 +37,9 @@ export default function MoviesPage({ topRated, action, comedy }: Props) {
 export async function getStaticProps() {
 	try {
 		const [topRatedRes, actionRes, comedyRes] = await Promise.all([
-			tmdbFetch<TmdbResponse<any>>(requests.fetchTopRated, { params: { language: 'en-US' } }),
-			tmdbFetch<TmdbResponse<any>>(requests.fetchActionMovies, { params: { language: 'en-US' } }),
-			tmdbFetch<TmdbResponse<any>>(requests.fetchComedyMovies, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchTopRated, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchActionMovies, { params: { language: 'en-US' } }),
+			tmdbFetch<TmdbResponse<Movie>>(requests.fetchComedyMovies, { params: { language: 'en-US' } }),
 		]);
 
 		return {

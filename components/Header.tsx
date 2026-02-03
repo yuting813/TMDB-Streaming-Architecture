@@ -15,7 +15,7 @@ const SearchModal = dynamic(() => import('./SearchModal'), { ssr: false });
 function Header() {
 	const router = useRouter();
 	const [isScrolled, setIsScrolled] = useState(false);
-	const [hasNotifications, setHasNotifications] = useState(true);
+	const [hasNotifications] = useState(true);
 	const [showAccountMenu, setShowAccountMenu] = useState(false);
 	const { logout, user } = useAuth();
 	const { subscription } = useSubscription(user ?? null);

@@ -5,7 +5,7 @@ export interface Genre {
 
 export interface Movie {
 	title?: string; // 電影名稱
-	name?: string;  // 影集名稱
+	name?: string; // 影集名稱
 	backdrop_path: string;
 	media_type?: string;
 	release_date?: string;
@@ -24,4 +24,5 @@ export interface Movie {
 
 export interface Element {
 	type: 'Bloopers' | 'Featurette' | 'Behind the Scenes' | 'Clip' | 'Trailer' | 'Teaser';
+	key: string;
 }

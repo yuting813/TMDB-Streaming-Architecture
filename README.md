@@ -1,146 +1,161 @@
 [English](README.md) | [繁體中文](README.zh-TW.md)
 
-# Netflix Clone - Frontend Engineering Streaming Platform
+# TMDB Streaming Architecture - Frontend Engineering Portfolio
 
-A Netflix-inspired streaming web application focused on **frontend architecture, predictable state flow, UX edge cases, and accessibility**, rather than feature quantity.
+A TMDB-based video streaming platform built with Next.js and TypeScript. This project focuses on UI Architecture, Predictable State, UX Edge Case Handling, and Accessibility (A11y) rather than just a collection of features.
 
-Live demo: https://stream.tinahu.dev/
-Source code: https://github.com/yuting813/netflix-clone-nextjs
-
-Demo account:
-
-- Email: demo@tinahu.dev
-- Password: Demo1234!
+- **Live Demo**: [stream.tinahu.dev](https://stream.tinahu.dev/)
+- **Demo Account**:
+  - Email: `demo@tinahu.dev`
+  - Password: `Demo1234!` (Includes Stripe test subscription permissions)
 
 ---
 
-## Why This Project
+## Project Motivation
 
-This project simulates real frontend engineering challenges:
+This project simulates real-world enterprise frontend scenarios to address:
 
-- Auth-driven UI state and route protection
-- Subscription-gated UI behavior
-- External API data with missing or unstable fields
-- UX edge cases (loading, empty, fallback, errors)
-- Component architecture that is easy to explain and evolve
-
-The goal is to demonstrate **how I reason about frontend systems**, not just feature output.
+- **State & Route Protection**: Managing the dependency between Auth and Subscription status.
+- **Permission-driven UI**: Real-time UI updates based on subscription access.
+- **Data Robustness**: Handling inconsistent or delayed data from external APIs (TMDB).
+- **Explainable Engineering**: Establishing a scalable, type-safe, and well-documented frontend structure.
 
 ---
 
-## Frontend Engineering Focus
+## Engineering Challenges & Decisions
 
-- **UI architecture**: components are pure, hooks manage side effects
-- **Predictable state flow**: centralized auth and subscription state with guarded initialization
-- **UX edge cases**: explicit loading, missing trailer, and fallback handling
-- **Accessibility**: ESC to close modal, focus restoration, keyboard flow
-- **Responsive stability**: header/rows remain stable under scroll and resize
-- **Maintainability**: typed helpers + shared types to reduce UI coupling
+### 1. Subscription-driven UI Stability
+
+- **Challenge**: Firebase Auth and Stripe subscription data sync asynchronously. Improper handling leads to **Race Conditions**, causing UI flickering or transient permission mismatches (e.g., a user briefly accessing restricted content before being redirected).
+- **Solution**: Architected the `useSubscription` hook as the **Single Source of Truth**, integrated with **Recoil** for global state management. Implemented **Skeleton Screens** to occupy the layout until the permission handshake is complete.
+- **Result**: Eliminated race conditions and content flashing, ensuring a predictable and trustworthy user experience.
+
+### 2. Hybrid Rendering Strategy & Performance
+
+- **Challenge**: A streaming platform requires both **SEO** (for content discoverability) and fluid navigation. Pure CSR (Client-Side Rendering) struggles with search engine indexing and **First Contentful Paint (FCP)**.
+- **Solution**: Leveraged Next.js **ISR (`getStaticProps` + `revalidate`)** to pre-render HTML with TMDB data at build time and regenerate it in the background, ensuring search engine indexability and fast initial load.
+- **Result**: Achieved optimal SEO performance and significantly reduced **LCP (Largest Contentful Paint)**, delivering near-instant initial page loads.
+
+### 3. Robust UX & Edge Case Handling
+
+- **Strategy**: Focused on system resilience against network instability and missing assets.
+- **Solution**: Implemented comprehensive **Fallback UIs** (e.g., default placeholders) for image load failures. Utilized the **Next.js Image Component** to enforce aspect ratios and optimize **CLS (Cumulative Layout Shift)**, preventing jarring layout shifts during loading.
 
 ---
 
-## Core Features
+## Key Features
 
-- Sign up / sign in / auto sign-out (Firebase Auth)
-- Subscription creation and gated access (Stripe + Firestore)
-- Movie browsing with random hero banner and categorized horizontal rows
-- Movie detail modal with trailer playback and robust fallback states
-- My List with real-time sync
+- **Authentication**: Sign up / Login / Cross-tab session sync (Firebase Auth).
+- **Payment Integration**: Subscription flow and real-time access control (Stripe + Firestore).
+- **Streaming Experience**: Dynamic Hero Banner and categorized horizontal carousels.
+- **Video Details**: Asynchronous data fetching with YouTube trailer embedding.
+- **My List**: Real-time CRUD operations synchronized with the database.
+
+---
+
+### Secure & Compliant Authentication UI
+
+Designed with explicit indicators to differentiate from commercial platforms.
+_(Note: Screenshot displays the localized Traditional Chinese interface)_
+![Auth Page Screenshot](docs/auth-preview.png)
 
 ---
 
 ## Tech Stack
 
 - **Framework**: Next.js (Pages Router), React
-- **Language**: TypeScript
+- **Language**: TypeScript (Type-first design)
+- **Testing**: Jest, React Testing Library
+- **Form Handling**: React Hook Form (Efficient validation)
+- **UI Library**: Material UI (Complex interactive components)
 - **Styling**: Tailwind CSS
-- **State**: Recoil
-- **Auth**: Firebase Auth
-- **Database**: Firestore
-- **Payments**: Stripe Checkout
+- **State**: Recoil (Atomic state management)
+- **Auth/Backend**: Firebase Auth, Firestore
+- **Payments**: Stripe SDK
 - **External API**: TMDB API
-- **Tooling**: ESLint, Prettier
 
 ---
 
-## Project Structure
+## Project Structure & Design Principles
+
+This project follows the standard Next.js directory structure combined with the Separation of Concerns (SoC) principle:
 
 ```text
-pages/        Next.js routing + API routes
-components/   Pure UI components (no side effects)
-hooks/        Business logic (auth, subscription, lists)
-utils/        API helpers and shared utilities
-atoms/        Recoil state definitions
-constants/    Shared constants (e.g. TMDB image base URL)
-lib/          Service helpers (Stripe, Firebase)
-types/        Shared TypeScript types
+pages/          # Next.js routes and page entry points
+components/     # UI Components (Atomic and Layout components)
+hooks/          # Custom hooks for business logic (useSubscription, useAuth)
+atoms/          # Recoil state definitions (e.g., Modal state)
+lib/            # External service configurations (Stripe, Firebase)
+utils/          # API helpers and typed fetching logic
+constants/      # Global constants and API configurations
+types/          # Global TypeScript types and interfaces
 ```
 
-Design principles:
-
-- UI components never call APIs directly
-- Side effects live in hooks
-- Shared types come first
+- **Pure UI Components**: Components focus solely on rendering and do not call APIs directly, ensuring a clean view layer without side effects.
+- **Separation of Logic & UI**: Business logic (Firebase, Stripe) is decoupled from UI components into custom hooks for better maintainability.
+- **Type-safe API Fetching**: Strictly defined API response types with TypeScript, handled within the utils layer to minimize runtime errors.
+- **Atomic State Management**: Leveraged Recoil for global UI states to prevent over-rendering and maintain high performance.
+- **Strict Typing**: Enforced strict typing with Interfaces; avoided the use of `any` to ensure system stability.
 
 ---
 
-## Setup
+## Quality Assurance
+
+- **CI/CD**: Automated deployment via Vercel.
+- **Testing**: Implemented **Jest** and **React Testing Library** for unit testing critical business logic (e.g., useSubscription), ensuring robust handling of loading, error, and permission states.
+  ![Unit Test Pass Screenshot](docs/test-pass-preview.png)
+  _(Screenshot: 100% Pass Rate on Unit Tests with Edge Case Coverage)_
+
+- **Code Standards**: Configured Pre-commit hooks to enforce ESLint and Prettier checks, ensuring code consistency and quality.
+
+---
+
+### Getting Started
+
+#### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/netflix-clone-nextjs.git
-cd netflix-clone-nextjs
+git clone https://github.com/yuting813/TMDB-Streaming-Architecture.git
+cd TMDB-Streaming-Architecture
+```
+
+#### 2. Install dependencies
+
+```bash
 npm install
-cp .env.example .env.local   # add your keys
-npm run dev                  # http://localhost:3000
 ```
 
-### Environment Variables
+#### 3. Setup environment variables
+
+Copy the example environment file:
 
 ```bash
-# Firebase
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
-
-# TMDB
-NEXT_PUBLIC_TMDB_API_KEY=your_tmdb_api_key
-
-# Stripe
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
+cp .env.example .env.local
 ```
 
----
+#### 4. Run the development server
 
-## Recent Frontend Highlights
+```bash
+npm run dev
+```
 
-- Reduced misleading redirects during auth initialization, keeping the first screen stable
-- Avoided blank trailer states by providing clear loading and fallback behavior
-- Kept header layout stable under scroll and resize to preserve interaction quality
-- Maintained thumbnail layout during image fetch to reduce visual shifts
-- Lowered UI coupling by centralizing TMDB requests in typed helpers
+#### 5. Run unit tests
 
----
-
-## Future Improvements (If Extended)
-
-- Add component and integration tests (modal, auth guard, subscription)
-- Performance profiling and critical path optimizations
-- More robust error boundaries and retry strategies
+```bash
+npm run test
+```
 
 ---
 
 ## About Me
 
-This project showcases my approach to frontend system design,
-with a focus on architectural clarity, predictable state management,
-and robust UX edge case handling.
+This project demonstrates how I translate my analytical logic from a procurement career into systematic frontend engineering.
 
-Contact: tinahuu321@gmail.com
-LinkedIn: https://www.linkedin.com/in/tina-hu-frontend
-GitHub: https://github.com/yuting813
+- **Email**: tinahuu321@gmail.com
+- **LinkedIn**: [Tina Hu](https://www.linkedin.com/in/tina-hu-frontend)
+- **GitHub**: [yuting813](https://github.com/yuting813)
 
----
+Note: This project was completed during my career transition to showcase engineering decisions and architectural clarity.
+
+> **Educational Purpose Disclaimer**
+> This project is for portfolio demonstration and educational purposes only. It is **NOT** a commercial product and is not affiliated with Netflix or any streaming service. All movie data is sourced from [TMDB API](https://www.themoviedb.org/).
