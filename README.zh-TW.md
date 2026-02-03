@@ -52,10 +52,19 @@
 
 ---
 
+### 安全與合規的驗證介面 (Secure & Compliant Authentication UI)
+
+設計了明確的標示與警語，以區隔商業平台，確保符合安全規範。
+![Auth Page Screenshot](docs/auth-preview.png)
+
+---
+
 ## 技術棧
 
 - **Framework**: Next.js (Pages Router), React
 - **Language**: TypeScript (型別優先設計)
+- **Form Handling**: React Hook Form (高效表單驗證)
+- **UI Library**: Material UI (複雜互動元件整合)
 - **Styling**: Tailwind CSS
 - **State**: Recoil (原子化狀態管理)
 - **Testing**: Jest, React Testing Library (Unit Testing)
@@ -90,32 +99,49 @@ types/          # 全域 TypeScript 型別與 Interface 定義
 
 ## 品質保證 (Quality Assurance)
 
-- **Testing**: 針對核心 Hook (如 useSubscription) 實作 Jest 單元測試，確保邊界狀況 (Loading/Error) 處理正確。
 - **CI/CD**: 串接 Vercel 自動化部署流程。
+- **Testing**: 針對核心 Hook (如 useSubscription) 實作 Jest 單元測試，確保邊界狀況 (Loading/Error) 處理正確。
+  ![單元測試通過截圖](docs/test-pass-preview.png)
+  \*(截圖：單元測試全數通過，包含多種邊界情境覆蓋)
+
 - **Code Quality**: 設定 Husky Pre-commit hook，強制執行 ESLint 與 Prettier 檢驗，確保程式碼品質與風格一致。
 
 ---
 
-# 1. 複製專案
+### Getting Started
 
-git clone [https://github.com/yuting813/TMDB-Streaming-Architecture.git](https://github.com/yuting813/TMDB-Streaming-Architecture.git)
+#### 1. 複製專案
+
+```bash
+git clone https://github.com/yuting813/TMDB-Streaming-Architecture.git
 cd TMDB-Streaming-Architecture
+```
 
-# 2. 安裝依賴
+#### 2. 安裝依賴
 
+```bash
 npm install
+```
 
-# 3. 設定環境變數 (請參考 .env.example)
+#### 3. 設定環境變數 (請參考 .env.example)
 
+```bash
 cp .env.example .env.local
+```
 
-# 4. 啟動開發伺服器
+#### 4. 啟動開發伺服器
 
+```bash
 npm run dev
+```
 
-# 5. 執行單元測試
+#### 5. 執行單元測試
 
-## npm run test
+```bash
+npm run test
+```
+
+---
 
 ## 關於我
 
@@ -129,7 +155,3 @@ npm run dev
 
 > **教育用途免責聲明**
 > 本專案僅供個人作品集展示與教育用途，**非**商業產品，且與 Netflix 或任何串流媒體服務無關。所有電影資料皆來自 [TMDB API](https://www.themoviedb.org/)。
-
-```
-
-```

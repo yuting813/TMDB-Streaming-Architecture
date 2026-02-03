@@ -53,11 +53,21 @@ This project simulates real-world enterprise frontend scenarios to address:
 
 ---
 
+### Secure & Compliant Authentication UI
+
+Designed with explicit indicators to differentiate from commercial platforms.
+_(Note: Screenshot displays the localized Traditional Chinese interface)_
+![Auth Page Screenshot](docs/auth-preview.png)
+
+---
+
 ## Tech Stack
 
 - **Framework**: Next.js (Pages Router), React
 - **Language**: TypeScript (Type-first design)
 - **Testing**: Jest, React Testing Library
+- **Form Handling**: React Hook Form (Efficient validation)
+- **UI Library**: Material UI (Complex interactive components)
 - **Styling**: Tailwind CSS
 - **State**: Recoil (Atomic state management)
 - **Auth/Backend**: Firebase Auth, Firestore
@@ -79,7 +89,6 @@ lib/            # External service configurations (Stripe, Firebase)
 utils/          # API helpers and typed fetching logic
 constants/      # Global constants and API configurations
 types/          # Global TypeScript types and interfaces
-
 ```
 
 - **Pure UI Components**: Components focus solely on rendering and do not call APIs directly, ensuring a clean view layer without side effects.
@@ -94,27 +103,29 @@ types/          # Global TypeScript types and interfaces
 
 - **CI/CD**: Automated deployment via Vercel.
 - **Testing**: Implemented **Jest** and **React Testing Library** for unit testing critical business logic (e.g., useSubscription), ensuring robust handling of loading, error, and permission states.
+  ![Unit Test Pass Screenshot](docs/test-pass-preview.png)
+  _(Screenshot: 100% Pass Rate on Unit Tests with Edge Case Coverage)_
 
 - **Code Standards**: Configured Pre-commit hooks to enforce ESLint and Prettier checks, ensuring code consistency and quality.
 
 ---
 
-## Getting Started
+### Getting Started
 
-### 1. Clone the repository
+#### 1. Clone the repository
 
 ```bash
 git clone https://github.com/yuting813/TMDB-Streaming-Architecture.git
 cd TMDB-Streaming-Architecture
 ```
 
-### 2. Install dependencies
+#### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Setup environment variables
+#### 3. Setup environment variables
 
 Copy the example environment file:
 
@@ -122,13 +133,13 @@ Copy the example environment file:
 cp .env.example .env.local
 ```
 
-### 4. Run the development server
+#### 4. Run the development server
 
 ```bash
 npm run dev
 ```
 
-### 5. Run unit tests
+#### 5. Run unit tests
 
 ```bash
 npm run test
@@ -136,7 +147,7 @@ npm run test
 
 ---
 
-##About Me
+## About Me
 
 This project demonstrates how I translate my analytical logic from a procurement career into systematic frontend engineering.
 
