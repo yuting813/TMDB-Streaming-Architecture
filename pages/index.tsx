@@ -14,7 +14,6 @@ import Row from '@/components/Row';
 import useAuth from '@/hooks/useAuth';
 import useList from '@/hooks/useList';
 import useSubscription from '@/hooks/useSubscription';
-import { modalState } from '@/atoms/modalAtom';
 import { db } from '@/firebase';
 import { Movie } from '@/typings';
 import requests, { tmdbFetch, TmdbResponse } from '@/utils/request';
@@ -50,7 +49,6 @@ const Home = ({
 		loading: subscriptionLoading,
 		error: subscriptionError,
 	} = useSubscription(user);
-	const showModal = useRecoilValue(modalState);
 	const list = useList(user?.uid);
 
 	useEffect(() => {
@@ -131,7 +129,7 @@ const Home = ({
 				</section>
 			</main>
 
-			{showModal && <Modal />}
+			<Modal />
 			<Footer />
 		</div>
 	);

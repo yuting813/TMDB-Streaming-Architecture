@@ -15,7 +15,6 @@ type Inputs = {
 function Login() {
 	const router = useRouter();
 	const { signIn, loading, initialLoading } = useAuth();
-	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	// form is handled by shared AuthForm component
 
@@ -25,16 +24,11 @@ function Login() {
 	};
 
 	const onSubmit: SubmitHandler<Inputs> = async ({ email, password }) => {
-		if (isSubmitting) return;
-		setIsSubmitting(true);
+		if (loading) return;
 
-		try {
-			const result = await signIn(email, password);
-			if (result.success) {
-				router.push('/');
-			}
-		} finally {
-			setIsSubmitting(false); // 確保在操作完成後重置狀態
+		const result = await signIn(email, password);
+		if (result.success) {
+			router.push('/');
 		}
 	};
 
@@ -79,7 +73,7 @@ function Login() {
 				<AuthForm
 					mode='login'
 					onSubmit={handleAuthFormSubmit}
-					loading={loading || isSubmitting || initialLoading}
+					loading={loading || initialLoading}
 				/>
 
 				<div className='mt-6 text-center text-[gray]'>

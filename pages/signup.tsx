@@ -15,19 +15,13 @@ type Inputs = {
 function Signup() {
 	const router = useRouter();
 	const { signUp, loading, initialLoading } = useAuth();
-	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const onSubmit: SubmitHandler<Inputs> = async ({ email, password }) => {
-		if (isSubmitting) return;
-		setIsSubmitting(true);
+		if (loading) return;
 
-		try {
-			const result = await signUp(email, password);
-			if (result.success) {
-				router.push('/');
-			}
-		} finally {
-			setIsSubmitting(false);
+		const result = await signUp(email, password);
+		if (result.success) {
+			router.push('/');
 		}
 	};
 
@@ -74,7 +68,7 @@ function Signup() {
 				<AuthForm
 					mode='signup'
 					onSubmit={handleAuthFormSubmit}
-					loading={loading || isSubmitting || initialLoading}
+					loading={loading || initialLoading}
 				/>
 
 				<div className='mt-6 text-center text-[gray]'>
