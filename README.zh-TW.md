@@ -1,157 +1,170 @@
-﻿[English](README.md) | [繁體中文](README.zh-TW.md)
+[English](README.md) | [繁體中文](README.zh-TW.md)
 
-# TMDB Streaming Architecture - Frontend Engineering Portfolio
+# TMDB Streaming Architecture — Frontend Engineering Portfolio
 
-這是一個以 Next.js 與 TypeScript 開發的 TMDB 串流架構演示網站。本專案核心目標在於實踐 UI 架構設計、狀態可預測性、UX 邊界情境處理與網頁可及性 (A11y)，而不僅是功能堆疊。
+這不是一個單純的「功能展示」專案。它是一個針對「非同步狀態依賴鏈」與「邊界極端情境（Edge Cases）」的工程架構驗證：展示如何在 Firebase Auth、Stripe 訂閱、與 TMDB 靜態資料這三條非同步資料流之間，設計出**可預測、防呆且具備高度防禦性（Defensive Design）**的狀態管理系統。
 
 - **Live Demo**: [stream.tinahu.dev](https://stream.tinahu.dev/)
-- **Demo 帳號**：
-  - Email: `demo@tinahu.dev`
-  - Password: `Demo1234!` (內含 Stripe 測試訂閱權限)
+- **Demo 帳號**：Email `demo@tinahu.dev` / Password `Demo1234!`（含 Stripe 測試訂閱權限）
 
 ---
 
-## 為什麼做這個專案
+## 核心架構與工程決策 (Architecture Decisions)
 
-此專案刻意模擬真實企業前端工程場景，解決以下核心問題：
+### 1. 落實單一事實來源 (SSOT)：ISR + Firestore 雙軌資料流
 
-- **狀態與路由保護**：處理 Auth 與訂閱狀態的依賴關係。
-- **權限驅動 UI**：訂閱狀態對內容存取權限的即時影響。
-- **資料強健性**：處理外部 API (TMDB) 資料不完整或延遲的情境。
-- **工程可解釋性**：建立易於說明、擴充且型別嚴謹的前端結構。
+電影清單與用戶個人資料的更新頻率截然不同，強制混用同一個資料層將導致狀態脫鉤。本專案將資料流依據特性拆分：
 
----
+| 軌道         | 機制                                                   | 觸發時機                          | Single Source of Truth (SSOT) |
+| ------------ | ------------------------------------------------------ | --------------------------------- | ----------------------------- |
+| 電影分類資料 | Next.js ISR (`getStaticProps` + `revalidate: 3600`)    | Build Time + 每小時背景增量       | TMDB API                      |
+| 用戶個人資料 | Firestore `onSnapshot` (`useList` / `useSubscription`) | 任何 DB 變化即時推送 (Push-based) | Firestore                     |
 
-## 核心技術挑戰與決策 (Engineering Challenges & Decisions)
+**設計決策**：針對使用者的「我的片單」，捨棄將狀態儲存於 Redux/Recoil 後再非同步推上後端的傳統作法，改將 Firestore 直接當作 SSOT。元件僅負責觸發寫入，並依賴 `onSnapshot` 被動接收變化，徹底杜絕了 UI 先行導致的狀態不一致風險。
 
-### 1. 訂閱狀態與 UI 的強健同步 (Subscription-driven UI Stability)
-
-- **挑戰**：Firebase Auth 與 Stripe 訂閱資料是異步加載的。若處理不當，使用者在登入後可能看到瞬時閃爍或權限不匹配（先看到付費內容隨後被踢出）。
-- **對策**：設計了 `useSubscription` Hook 作為單一真理來源，並結合 Recoil 全域狀態。在資料尚未完全同步前，透過 Skeleton Screen 佔位，直到確認權限後才渲染內容。
-- **成果**：解決了 Race Condition 導致的 UI 閃爍問題，提升使用者對平台的信任感。
-
-### 2. 混合渲染策略與效能優化 (Hybrid Rendering Strategy & Performance)
-
-- **挑戰**：影音平台需要兼顧 SEO (讓電影能被搜尋) 與流暢的換頁體驗。傳統 CSR (Client-Side Rendering) 在 SEO 與首屏載入速度 (FCP) 上表現不佳。
-- **對策**：利用 Next.js 的 **ISR (`getStaticProps` + `revalidate`)** 在建置時預先渲染 HTML，並在背景定期更新資料，確保 SEO 且提供比 SSR 更快的回應速度。同時針對圖片密集區域實作 Lazy Loading。
-- **成果**：確保搜尋引擎能正確爬取內容，並大幅降低 LCP (Largest Contentful Paint) 時間，讓使用者能瞬間看到首屏內容。
-
-### 3. 極致的 UX 邊界情境處理
-
-- **對策**：針對圖片載入失敗、網路延遲等邊界情況，實作了完整的 Fallback UI (如預設佔位圖)。利用 Next.js Image Component 優化 CLS (Cumulative Layout Shift)，防止圖片載入時造成的版面跳動。
+**錯誤 Fallback**：`getStaticProps` 的 catch 區塊在 TMDB 請求失敗時會回傳空陣列，並縮短 `revalidate` 至 60 秒，確保 build 失敗後盡快觸發重建重試。
 
 ---
 
-## 主要功能
+### 2. 五層防禦性渲染守衛鏈 (5-Layer Guard Chain)
 
-- **安全驗證**：註冊 / 登入 / 跨分頁狀態感知 (Firebase Auth)。
-- **支付整合**：訂閱流建立與權限即時控管 (Stripe Checkout + Firestore)。
-- **影音體驗**：動態隨機 Hero Banner、分類橫向捲軸列。
-- **影片詳情**：異步資料加載與 YouTube 預告片嵌入。
-- **我的清單**：即時新增/移除清單，並與資料庫同步。
+Firebase Auth 狀態確認後，才能啟動 Firestore 查詢——這是一個天然的瀑布依賴（Waterfall Dependency）。若使用單一複雜的 `if` 判斷式，將導致邏輯難以維護。
 
----
+**設計決策**：在 `pages/index.tsx` 中實作嚴格的 early return 鏈，每層只專注一個防禦邊界：
 
-### 安全與合規的驗證介面 (Secure & Compliant Authentication UI)
+```typescript
+// 第 1 層 — Loading 防護：任一資料來源載入中，全螢幕 Spinner
+if (authLoading || subscriptionLoading) return <Loader />;
 
-設計了明確的標示與警語，以區隔商業平台，確保符合安全規範。
-![Auth Page Screenshot](docs/auth-preview.png)
+// 第 2 層 — Auth 防護：未登入者阻擋掛載
+// （redirect 由 useAuth 內部的 onAuthStateChanged callback 負責執行）
+if (!user) return null;
 
----
+// 第 3 層 — 錯誤處理：Firestore 連線異常的 fallback UI
+if (subscriptionError) return <ErrorState />;
 
-## 技術棧
+// 第 4 層 — 權限防護：無有效訂閱者，鎖定於訂閱方案頁
+if (!subscription) return <Plans products={products} />;
 
-- **Framework**: Next.js (Pages Router), React
-- **Language**: TypeScript (型別優先設計)
-- **Form Handling**: React Hook Form (高效表單驗證)
-- **UI Library**: Material UI (複雜互動元件整合)
-- **Styling**: Tailwind CSS
-- **State**: Recoil (原子化狀態管理)
-- **Testing**: Jest, React Testing Library (Unit Testing)
-- **Auth/Backend**: Firebase Auth, Firestore
-- **Payments**: Stripe SDK
-- **External API**: TMDB API
+// 第 5 層 — 全部通過後掛載主核心元件
+return <MainContent />;
+```
+
+優勢在於：未來若需新增邊界情境，只需插入一層 `if` 即可，不會引發回歸錯誤（Regression Bug）。
 
 ---
 
-## 專案結構與設計原則
+### 3. `initialLoading` — FOUC 與畫面閃動的根本解法
 
-本專案採用 Next.js 的標準目錄結構，並結合關注點分離 (Separation of Concerns) 原則進行模組化開發：
+Firebase 驗證為非同步回調。在 SDK 確認使用者狀態前，`user` 會暫時呈現 `null`。若此時觸發路由守衛，已登入的用戶會經歷「未登入畫面 → 首頁」的嚴重閃動（Flash of Unauthenticated Content, FOUC）。
+
+**設計決策**：在 `useAuth` 實作堅固的 `initialLoading` 時序鎖。在第一次 `onAuthStateChanged` 回調確認前，強制攔截 children 渲染：
+
+```typescript
+<AuthContext.Provider value={memoedValue}>
+  {!initialLoading && children}
+</AuthContext.Provider>
+```
+
+---
+
+### 4. 狀態選型：Context vs Recoil（按資料流向解耦）
+
+- **Auth (React Context)**：認證狀態是樹頂端的依賴，變更頻率低。`useAuth` 封裝完整的 Firebase 訂閱生命週期與自動登出計時器防護，並用 `useMemo` 阻擋渲染噪音。
+- **UI 狀態 (Recoil Atom)**：Banner、Thumbnail 與 Modal 若使用 Context 會引發大範圍的不必要重渲染。本系統使用 Recoil atom 作為輕量的發布/訂閱（Publish/Subscribe）事件匯流排，讓元件完全解耦——Thumbnail 點擊後僅需 `setCurrentMovie(movie)`，無需任何 Prop Drilling。
+
+  **寫入端隔離**：`Thumbnail` 採用 `useSetRecoilState`（純寫入 Setter）而非 `useRecoilState`。因為 Thumbnail 只需要發送狀態、從不讀取，使用 `useSetRecoilState` 可確保所有縮圖元件都不會被登記為 Recoil atom 的訂閱者，徹底消除「點擊任意縮圖導致畫面上所有縮圖一同重渲染」的 O(N) 連鎖渲染問題。`Home` 頁面本身也不持有任何 `modalState` 的參照，確保頁面層級元件完全脫離 UI 互動狀態的訂閱鏈。
+
+---
+
+### 5. API 層極限防禦：`tmdbFetch` 的三道防線
+
+嚴禁在元件內直接呼叫原生 `fetch()`。所有網路請求統一透過 `utils/request.ts` 轉發，並落實三大防護：
+
+1. **請求去重（Request Deduplication / In-flight Cache）**：`getStaticProps` 並行 8 個請求，不同路由頁面間可能含有重複 URL。透過模組級別的 `Map<string, Promise>` 快取，相同 URL 返回同一個 Promise 實體，阻斷重複流量。Promise reject 時自動清除 cache entry，允許重試。
+2. **Build 卡死防護（Timeout）**：內建 `AbortController` 賦予 8 秒 timeout，避免 TMDB 網路不穩導致 Next.js build 無限掛起。
+3. **安全的中斷聚合（`mergeAbortSignals`）**：完美收斂「網路 Timeout 事件」與「Component 卸載事件」。任何一方發送 Abort 皆可乾淨砍斷底層 `fetch`；abort 後同步執行 `removeEventListener` 清除兩個原始 signal 的監聽器，根除 React Memory Leak 與懸空非同步回調。
+
+---
+
+### 6. Modal 的競態條件防禦（Stale Result Cancellation）
+
+當使用者在影片列表快速連點時，舊的 `fetch` 結果可能在新的 Modal 已渲染後才回來，進而覆蓋狀態造成畫面錯亂（Race Condition）。
+
+**設計決策**：結合 Cancellation Token Pattern，讓非同步請求具備自我失效的判斷能力：
+
+```typescript
+let active = true;
+async function fetchMovie() {
+  const data = await tmdbFetch(...);
+  if (!active) return; // 元件卸載時丟棄 stale 結果，防止狀態污染
+  setTrailer(key);
+}
+return () => { active = false; };
+```
+
+---
+
+## 系統架構圖
+
+```mermaid
+graph TD
+    subgraph "Build Time — ISR"
+        A[getStaticProps] -->|Promise.all x8| B["tmdbFetch&lt;T&gt;"]
+        B -->|revalidate 3600| C[Static HTML + Props]
+    end
+
+    subgraph "Runtime — Auth Layer"
+        D[Firebase onAuthStateChanged] --> E[AuthProvider Context]
+        E -->|initialLoading gate| F[App Children Mounted]
+    end
+
+    subgraph "Runtime — Firestore Realtime"
+        E -->|user.uid| G[useSubscription onSnapshot]
+        E -->|user.uid| H[useList onSnapshot]
+        G -->|subscription / loading / error| I[5-Layer Guard Chain]
+        H -->|list array| J[My List Row]
+    end
+
+    subgraph "UI State — Recoil"
+        K[Banner / Thumbnail] -->|setCurrentMovie + setShowModal| L[Recoil Atoms]
+        L -->|movieState / modalState| M[Modal Component]
+    end
+
+    C --> I
+    I -->|All guards pass| N[Full Home Page]
+    N --> K
+```
+
+---
+
+## 邊界狀態處理與品質保證
+
+- **圖片三態狀態機**：每個圖片元件維護三態——載入中（`animate-pulse` Skeleton 防止 CLS）、成功（`opacity-100` 淡入防閃跳）、失敗（本地 fallback 圖片防破圖）。`onError` 同時觸發 `setIsLoaded(true)`，確保 fallback 啟動後 skeleton 即時消失。`Thumbnail.tsx` 與 `Modal.tsx` 均有實作。
+- **不可變的路由白名單**：`Object.freeze(['/login', ...])` 確保 Auth 守衛的判斷基準在執行期不會被任何模組意外篡改。
+- **Jest 單元測試**：聚焦 `useSubscription`，使用 Mock Firestore 測試 6 種邊界狀態機切換：`null user`、`empty list`、`onSnapshot error`、`loading`、`subscription active`、`subscription inactive`，驗證極端情境下的強韌度。
+
+---
+
+## 專案結構
 
 ```text
-pages/          # Next.js 路由系統與各頁面入口
-components/     # UI 元件 (分為單一功能元件與複合型佈局元件)
-hooks/          # 封裝複雜商業邏輯 (如 useSubscription, useAuth)
-atoms/          # Recoil 全域狀態定義 (如 Modal 顯示狀態)
-lib/            # 外部服務實例化配置 (Stripe, Firebase)
-utils/          # 封裝 API Helpers 與 Typed Fetching 邏輯
-constants/      # 管理全域常數與第三方 API 設定 (如 TMDB 配置)
-types/          # 全域 TypeScript 型別與 Interface 定義
-```
-
-- **UI 元件保持 Pure**：元件不直接呼叫 API，僅負責渲染，確保 View 層乾淨且無 Side Effects。
-- **商業邏輯與 UI 分離**：將 Firebase 監聽、Stripe 訂閱判斷等邏輯抽離至自定義 Hooks 中，提升代碼可維護性。
-- **型別驅動開發 (Type-safe API Fetching)**：利用 TypeScript 嚴格定義 API Response 型別，在 Utils 層進行處理，大幅降低執行期錯誤。
-- **全域狀態原子化**：透過 Recoil 實作原子化狀態管理，僅針對跨元件共享的 UI 狀態進行管理，避免過度渲染並維持效能。
-- **型別安全性**：全面定義 Interface，禁止 `any` 型別擴散，確保代碼結構嚴謹。
-
----
-
-## 品質保證 (Quality Assurance)
-
-- **CI/CD**: 串接 Vercel 自動化部署流程。
-- **Testing**: 針對核心 Hook (如 useSubscription) 實作 Jest 單元測試，確保邊界狀況 (Loading/Error) 處理正確。
-  ![單元測試通過截圖](docs/test-pass-preview.png)
-  \*(截圖：單元測試全數通過，包含多種邊界情境覆蓋)
-
-- **Code Quality**: 設定 Husky Pre-commit hook，強制執行 ESLint 與 Prettier 檢驗，確保程式碼品質與風格一致。
-
----
-
-### Getting Started
-
-#### 1. 複製專案
-
-```bash
-git clone https://github.com/yuting813/TMDB-Streaming-Architecture.git
-cd TMDB-Streaming-Architecture
-```
-
-#### 2. 安裝依賴
-
-```bash
-npm install
-```
-
-#### 3. 設定環境變數 (請參考 .env.example)
-
-```bash
-cp .env.example .env.local
-```
-
-#### 4. 啟動開發伺服器
-
-```bash
-npm run dev
-```
-
-#### 5. 執行單元測試
-
-```bash
-npm run test
+pages/          # 路由入口（保持邏輯極簡化，將複雜度委派至 Hooks）
+components/     # UI 呈現層（不處理 API 直接呼叫）
+hooks/          # 防禦性狀態管理邏輯（useAuth / useSubscription / useList）
+atoms/          # 原子化 Recoil 狀態
+utils/          # API 轉發介面與網路層防禦實作
 ```
 
 ---
 
 ## 關於我
 
-這個專案展示了我如何將6年採購職涯培養的嚴謹邏輯與風險控管思維，轉化為前端開發中的系統化思考，確保專案不僅具備功能，更具備高度的預測性與架構穩定性。
+過去 6 年的採購職涯，訓練出了對「風險控管」與「極端狀況預判」的高度敏感性。在轉職前端工程師的過程中，我將這份思維轉化為對**防禦性工程設計（Defensive Design）**的追求。
 
-- **Email**: tinahuu321@gmail.com
-- **LinkedIn**: [Tina Hu](https://www.linkedin.com/in/tina-hu-frontend)
+這個專案正是這種思維的具象化：每一個元件的三態規劃、每一條 AbortSignal 的中斷邏輯，以及每一層 Promise 請求的緩存，都體現了我對於「當系統不完美時，我們如何保證 UI 一致性」的深度考量。
+
 - **GitHub**: [yuting813](https://github.com/yuting813)
 
-註：此專案為個人學習與職涯轉換期間完成，著重於工程設計與架構可解釋性。
-
 > **教育用途免責聲明**
-> 本專案僅供個人作品集展示與教育用途，**非**商業產品，且與 Netflix 或任何串流媒體服務無關。所有電影資料皆來自 [TMDB API](https://www.themoviedb.org/)。
+> 本專案僅供個人技術證明與教育用途，**非**商業產品，且與任何串流媒體服務無關。電影資料皆來自 [TMDB API](https://www.themoviedb.org/)
