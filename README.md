@@ -1,161 +1,170 @@
 [English](README.md) | [繁體中文](README.zh-TW.md)
 
-# TMDB Streaming Architecture - Frontend Engineering Portfolio
+# TMDB Streaming Architecture — Frontend Engineering Portfolio
 
-A TMDB-based video streaming platform built with Next.js and TypeScript. This project focuses on UI Architecture, Predictable State, UX Edge Case Handling, and Accessibility (A11y) rather than just a collection of features.
+This is not a feature-showcase project. It is an architectural validation of **async state dependency chains** and **edge case handling** — demonstrating how to design a **predictable, fault-tolerant, and defensively architected** state management system across three concurrent async data streams: Firebase Auth, Stripe subscriptions, and TMDB static data.
 
 - **Live Demo**: [stream.tinahu.dev](https://stream.tinahu.dev/)
-- **Demo Account**:
-  - Email: `demo@tinahu.dev`
-  - Password: `Demo1234!` (Includes Stripe test subscription permissions)
+- **Demo Account**: Email `demo@tinahu.dev` / Password `Demo1234!` (includes Stripe test subscription access)
 
 ---
 
-## Project Motivation
+## Architecture Decisions
 
-This project simulates real-world enterprise frontend scenarios to address:
+### 1. Enforcing Single Source of Truth (SSOT): ISR + Firestore Dual Data Streams
 
-- **State & Route Protection**: Managing the dependency between Auth and Subscription status.
-- **Permission-driven UI**: Real-time UI updates based on subscription access.
-- **Data Robustness**: Handling inconsistent or delayed data from external APIs (TMDB).
-- **Explainable Engineering**: Establishing a scalable, type-safe, and well-documented frontend structure.
+Movie listings and user-specific data have fundamentally different update frequencies. Forcing them through the same data layer leads to state desync. This project deliberately splits them by characteristic:
 
----
+| Stream              | Mechanism                                              | Trigger                                            | SSOT      |
+| ------------------- | ------------------------------------------------------ | -------------------------------------------------- | --------- |
+| Movie category data | Next.js ISR (`getStaticProps` + `revalidate: 3600`)    | Build time + hourly background revalidation        | TMDB API  |
+| User personal data  | Firestore `onSnapshot` (`useList` / `useSubscription`) | Push-based: any DB write triggers immediate update | Firestore |
 
-## Engineering Challenges & Decisions
+**Design decision**: For "My List", the conventional pattern of storing state in Redux/Recoil and then syncing to a backend was deliberately abandoned. Firestore is used directly as the SSOT. Components only trigger writes; UI state is derived passively from `onSnapshot`, eliminating the entire class of optimistic-update desync bugs.
 
-### 1. Subscription-driven UI Stability
-
-- **Challenge**: Firebase Auth and Stripe subscription data sync asynchronously. Improper handling leads to **Race Conditions**, causing UI flickering or transient permission mismatches (e.g., a user briefly accessing restricted content before being redirected).
-- **Solution**: Architected the `useSubscription` hook as the **Single Source of Truth**, integrated with **Recoil** for global state management. Implemented **Skeleton Screens** to occupy the layout until the permission handshake is complete.
-- **Result**: Eliminated race conditions and content flashing, ensuring a predictable and trustworthy user experience.
-
-### 2. Hybrid Rendering Strategy & Performance
-
-- **Challenge**: A streaming platform requires both **SEO** (for content discoverability) and fluid navigation. Pure CSR (Client-Side Rendering) struggles with search engine indexing and **First Contentful Paint (FCP)**.
-- **Solution**: Leveraged Next.js **ISR (`getStaticProps` + `revalidate`)** to pre-render HTML with TMDB data at build time and regenerate it in the background, ensuring search engine indexability and fast initial load.
-- **Result**: Achieved optimal SEO performance and significantly reduced **LCP (Largest Contentful Paint)**, delivering near-instant initial page loads.
-
-### 3. Robust UX & Edge Case Handling
-
-- **Strategy**: Focused on system resilience against network instability and missing assets.
-- **Solution**: Implemented comprehensive **Fallback UIs** (e.g., default placeholders) for image load failures. Utilized the **Next.js Image Component** to enforce aspect ratios and optimize **CLS (Cumulative Layout Shift)**, preventing jarring layout shifts during loading.
+**Error fallback**: The `getStaticProps` catch block returns empty arrays and shortens `revalidate` to 60 seconds on TMDB failure, ensuring failed builds trigger a rebuild retry as soon as possible.
 
 ---
 
-## Key Features
+### 2. 5-Layer Defensive Guard Chain
 
-- **Authentication**: Sign up / Login / Cross-tab session sync (Firebase Auth).
-- **Payment Integration**: Subscription flow and real-time access control (Stripe + Firestore).
-- **Streaming Experience**: Dynamic Hero Banner and categorized horizontal carousels.
-- **Video Details**: Asynchronous data fetching with YouTube trailer embedding.
-- **My List**: Real-time CRUD operations synchronized with the database.
+Firebase Auth confirmation is a prerequisite for Firestore queries — a natural waterfall dependency. A single compound `if` statement makes this logic unmaintainable and fragile.
 
----
+**Design decision**: Implement a strict early-return chain in `pages/index.tsx`. Each layer owns exactly one defensive boundary:
 
-### Secure & Compliant Authentication UI
+```typescript
+// Layer 1 — Loading guard: block render while any data source is loading
+if (authLoading || subscriptionLoading) return <Loader />;
 
-Designed with explicit indicators to differentiate from commercial platforms.
-_(Note: Screenshot displays the localized Traditional Chinese interface)_
-![Auth Page Screenshot](docs/auth-preview.png)
+// Layer 2 — Auth guard: block unauthenticated mount
+// (redirect handled by onAuthStateChanged callback inside useAuth)
+if (!user) return null;
 
----
+// Layer 3 — Error handling: Firestore connection failure fallback UI
+if (subscriptionError) return <ErrorState />;
 
-## Tech Stack
+// Layer 4 — Permission guard: lock users without active subscription
+if (!subscription) return <Plans products={products} />;
 
-- **Framework**: Next.js (Pages Router), React
-- **Language**: TypeScript (Type-first design)
-- **Testing**: Jest, React Testing Library
-- **Form Handling**: React Hook Form (Efficient validation)
-- **UI Library**: Material UI (Complex interactive components)
-- **Styling**: Tailwind CSS
-- **State**: Recoil (Atomic state management)
-- **Auth/Backend**: Firebase Auth, Firestore
-- **Payments**: Stripe SDK
-- **External API**: TMDB API
+// Layer 5 — All guards passed: mount full application
+return <MainContent />;
+```
+
+The advantage: adding a new boundary condition requires inserting one `if` — no risk of regression in existing layers.
 
 ---
 
-## Project Structure & Design Principles
+### 3. `initialLoading` — Eliminating FOUC at the Root
 
-This project follows the standard Next.js directory structure combined with the Separation of Concerns (SoC) principle:
+Firebase Auth is asynchronous. Before the SDK confirms user state, `user` is momentarily `null`. If a route guard fires at this moment, authenticated users experience a jarring flash from the unauthenticated view to the home page (Flash of Unauthenticated Content, FOUC).
+
+**Design decision**: Introduce an `initialLoading` timing lock in `useAuth`. Children are blocked from mounting until the first `onAuthStateChanged` callback resolves:
+
+```typescript
+<AuthContext.Provider value={memoedValue}>
+  {!initialLoading && children}
+</AuthContext.Provider>
+```
+
+---
+
+### 4. State Library Selection: Context vs Recoil (Decoupled by Data Flow Direction)
+
+- **Auth (React Context)**: Authentication state is a top-of-tree dependency with low change frequency. `useAuth` encapsulates the full Firebase subscription lifecycle and an auto-logout timer, with `useMemo` preventing unnecessary re-renders downstream.
+- **UI State (Recoil Atoms)**: Using Context for Banner, Thumbnail, and Modal state would cause excessive re-renders across unrelated subtrees. Recoil atoms serve as a lightweight publish/subscribe event bus — a `Thumbnail` click only needs `setCurrentMovie(movie)`, with no prop drilling required.
+
+  **Write-side isolation**: `Thumbnail` uses `useSetRecoilState` (setter-only) instead of `useRecoilState`. Because `Thumbnail` only needs to dispatch state — never read it — using `useSetRecoilState` prevents all visible thumbnails from being registered as atom subscribers. This eliminates the O(N) re-render cascade that would otherwise occur when any single thumbnail is clicked. The `Home` page itself also holds no reference to `modalState`, keeping page-level components entirely free from UI interaction subscriptions.
+
+---
+
+### 5. API Layer Defense: Three Lines of Protection in `tmdbFetch`
+
+Direct `fetch()` calls inside components are prohibited. All network access is routed through `utils/request.ts`, which enforces three layers of protection:
+
+1. **Request Deduplication (In-flight Cache)**: `getStaticProps` fires 8 parallel requests that may share duplicate URLs across route pages. A module-level `Map<string, Promise>` ensures identical URLs share a single Promise instance. On rejection, the entry is automatically cleared to allow retry.
+2. **Build Hang Prevention (Timeout)**: A built-in `AbortController` enforces an 8-second timeout, preventing TMDB network instability from hanging the entire Next.js build indefinitely.
+3. **Safe Signal Merging (`mergeAbortSignals`)**: Converges the network timeout abort event and the component unmount abort event. Either side triggering abort cleanly cancels the underlying `fetch`. After abort, `removeEventListener` cleans up both original signal listeners, eliminating React memory leaks and stale async callbacks.
+
+---
+
+### 6. Modal Race Condition Defense (Stale Result Cancellation)
+
+When a user rapidly clicks between movies, a slow `fetch` from a previous selection may resolve after a newer Modal has already rendered, overwriting state with stale data.
+
+**Design decision**: Cancellation Token Pattern gives each async operation the ability to self-invalidate:
+
+```typescript
+let active = true;
+async function fetchMovie() {
+  const data = await tmdbFetch(...);
+  if (!active) return; // Discard stale result on unmount — prevents state corruption
+  setTrailer(key);
+}
+return () => { active = false; };
+```
+
+---
+
+## System Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph "Build Time — ISR"
+        A[getStaticProps] -->|Promise.all x8| B["tmdbFetch&lt;T&gt;"]
+        B -->|revalidate 3600| C[Static HTML + Props]
+    end
+
+    subgraph "Runtime — Auth Layer"
+        D[Firebase onAuthStateChanged] --> E[AuthProvider Context]
+        E -->|initialLoading gate| F[App Children Mounted]
+    end
+
+    subgraph "Runtime — Firestore Realtime"
+        E -->|user.uid| G[useSubscription onSnapshot]
+        E -->|user.uid| H[useList onSnapshot]
+        G -->|subscription / loading / error| I[5-Layer Guard Chain]
+        H -->|list array| J[My List Row]
+    end
+
+    subgraph "UI State — Recoil"
+        K[Banner / Thumbnail] -->|setCurrentMovie + setShowModal| L[Recoil Atoms]
+        L -->|movieState / modalState| M[Modal Component]
+    end
+
+    C --> I
+    I -->|All guards pass| N[Full Home Page]
+    N --> K
+```
+
+---
+
+## Edge Case Handling & Quality Assurance
+
+- **Image Three-State Machine**: Every image component manages three states — Loading (`animate-pulse` skeleton prevents CLS), Success (`opacity-100` fade-in prevents flash), and Error (local fallback image prevents broken image icons). `onError` simultaneously sets `isLoaded(true)` to ensure the skeleton is dismissed when the fallback activates. Implemented in both `Thumbnail.tsx` and `Modal.tsx`.
+- **Immutable Route Whitelist**: `Object.freeze(['/login', ...])` ensures the auth guard's source of truth cannot be accidentally mutated at runtime by any module.
+- **Jest Unit Tests**: Focused on `useSubscription` with Mock Firestore, covering 6 boundary state transitions: `null user`, `empty list`, `onSnapshot error`, `loading`, `subscription active`, and `subscription inactive`.
+
+---
+
+## Project Structure
 
 ```text
-pages/          # Next.js routes and page entry points
-components/     # UI Components (Atomic and Layout components)
-hooks/          # Custom hooks for business logic (useSubscription, useAuth)
-atoms/          # Recoil state definitions (e.g., Modal state)
-lib/            # External service configurations (Stripe, Firebase)
-utils/          # API helpers and typed fetching logic
-constants/      # Global constants and API configurations
-types/          # Global TypeScript types and interfaces
-```
-
-- **Pure UI Components**: Components focus solely on rendering and do not call APIs directly, ensuring a clean view layer without side effects.
-- **Separation of Logic & UI**: Business logic (Firebase, Stripe) is decoupled from UI components into custom hooks for better maintainability.
-- **Type-safe API Fetching**: Strictly defined API response types with TypeScript, handled within the utils layer to minimize runtime errors.
-- **Atomic State Management**: Leveraged Recoil for global UI states to prevent over-rendering and maintain high performance.
-- **Strict Typing**: Enforced strict typing with Interfaces; avoided the use of `any` to ensure system stability.
-
----
-
-## Quality Assurance
-
-- **CI/CD**: Automated deployment via Vercel.
-- **Testing**: Implemented **Jest** and **React Testing Library** for unit testing critical business logic (e.g., useSubscription), ensuring robust handling of loading, error, and permission states.
-  ![Unit Test Pass Screenshot](docs/test-pass-preview.png)
-  _(Screenshot: 100% Pass Rate on Unit Tests with Edge Case Coverage)_
-
-- **Code Standards**: Configured Pre-commit hooks to enforce ESLint and Prettier checks, ensuring code consistency and quality.
-
----
-
-### Getting Started
-
-#### 1. Clone the repository
-
-```bash
-git clone https://github.com/yuting813/TMDB-Streaming-Architecture.git
-cd TMDB-Streaming-Architecture
-```
-
-#### 2. Install dependencies
-
-```bash
-npm install
-```
-
-#### 3. Setup environment variables
-
-Copy the example environment file:
-
-```bash
-cp .env.example .env.local
-```
-
-#### 4. Run the development server
-
-```bash
-npm run dev
-```
-
-#### 5. Run unit tests
-
-```bash
-npm run test
+pages/          # Route entrypoints (kept minimal — complexity delegated to hooks)
+components/     # Presentation layer (no direct API calls)
+hooks/          # Defensive state management logic (useAuth / useSubscription / useList)
+atoms/          # Recoil atomic state definitions
+utils/          # API transport layer and network-level defense implementations
 ```
 
 ---
 
-## About Me
+## About
 
-This project demonstrates how I translate my analytical logic from a procurement career into systematic frontend engineering.
+Six years in procurement trained a sharp instinct for **risk anticipation** and **edge case identification**. Transitioning into frontend engineering, I've channeled that mindset into a pursuit of **Defensive Design**.
 
-- **Email**: tinahuu321@gmail.com
-- **LinkedIn**: [Tina Hu](https://www.linkedin.com/in/tina-hu-frontend)
+This project is the concrete expression of that approach: the three-state planning behind every image component, the abort logic on every `AbortSignal`, and the cache layer on every Promise chain — each reflects a core question I keep asking: _when the system is imperfect, how do we guarantee UI consistency?_
+
 - **GitHub**: [yuting813](https://github.com/yuting813)
 
-Note: This project was completed during my career transition to showcase engineering decisions and architectural clarity.
-
-> **Educational Purpose Disclaimer**
-> This project is for portfolio demonstration and educational purposes only. It is **NOT** a commercial product and is not affiliated with Netflix or any streaming service. All movie data is sourced from [TMDB API](https://www.themoviedb.org/).
+> **Educational Disclaimer**
+> This project is for personal technical demonstration and educational purposes only. It is **not** a commercial product. All movie data is sourced from the [TMDB API](https://www.themoviedb.org/).
