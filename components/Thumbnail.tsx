@@ -1,6 +1,6 @@
 import { DocumentData } from 'firebase/firestore';
 import Image from 'next/image';
-import { useRecoilState } from 'recoil';
+import { useSetRecoilState } from 'recoil';
 import { useState } from 'react';
 import { modalState, movieState } from '@/atoms/modalAtom';
 import { Movie } from '@/typings';
@@ -13,10 +13,10 @@ interface Props {
 }
 
 function Thumbnail({ movie, orientation = 'backdrop', tallOnLarge = false }: Props) {
-	// These state variables are used by parent/sibling components through Recoil
-	// we only need the setters here; discard the first element to avoid unused var lint
-	const [, setShowModal] = useRecoilState(modalState);
-	const [, setCurrentMovie] = useRecoilState(movieState);
+	// We only need to set the state, not read it.
+	// using useSetRecoilState prevents all Thumbnails from re-rendering when the state changes!
+	const setShowModal = useSetRecoilState(modalState);
+	const setCurrentMovie = useSetRecoilState(movieState);
 	const [imageError, setImageError] = useState(false);
 	const [isLoaded, setIsLoaded] = useState(false);
 	// choose poster for portrait, otherwise backdrop
