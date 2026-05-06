@@ -164,7 +164,9 @@ Six years in procurement trained a sharp instinct for **risk anticipation** and 
 
 This project is the concrete expression of that approach: the three-state planning behind every image component, the abort logic on every `AbortSignal`, and the cache layer on every Promise chain — each reflects a core question I keep asking: _when the system is imperfect, how do we guarantee UI consistency?_
 
+- **Website**: [tinahu.dev](https://www.tinahu.dev/)
 - **GitHub**: [yuting813](https://github.com/yuting813)
+- **Email**: [tinahuu321@gmail.com](mailto:tinahuu321@gmail.com)
 
 > **Educational Disclaimer**
 > This project is for personal technical demonstration and educational purposes only. It is **not** a commercial product. All movie data is sourced from the [TMDB API](https://www.themoviedb.org/).
