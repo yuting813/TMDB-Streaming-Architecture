@@ -164,7 +164,9 @@ utils/          # API 轉發介面與網路層防禦實作
 
 這個專案正是這種思維的具象化：每一個元件的三態規劃、每一條 AbortSignal 的中斷邏輯，以及每一層 Promise 請求的緩存，都體現了我對於「當系統不完美時，我們如何保證 UI 一致性」的深度考量。
 
+- **Website**: [tinahu.dev](https://www.tinahu.dev/)
 - **GitHub**: [yuting813](https://github.com/yuting813)
+- **Email**: [tinahuu321@gmail.com](mailto:tinahuu321@gmail.com)
 
 > **教育用途免責聲明**
 > 本專案僅供個人技術證明與教育用途，**非**商業產品，且與任何串流媒體服務無關。電影資料皆來自 [TMDB API](https://www.themoviedb.org/)
