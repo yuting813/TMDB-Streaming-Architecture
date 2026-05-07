@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import Loader from '../components/Loader';
 import { auth } from '../firebase';
 
 // 30 分鐘自動登出（毫秒）
@@ -165,17 +166,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			signUp,
 			signIn,
 			loading,
-				logout,
-				error,
-				resetError,
-				initialLoading,
-			}),
-			// eslint-disable-next-line react-hooks/exhaustive-deps
-			[user, loading, error, signIn, signUp, resetError, initialLoading],
-		);
+			logout,
+			error,
+			resetError,
+			initialLoading,
+		}),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[user, loading, error, signIn, signUp, resetError, initialLoading],
+	);
 
 	return (
-		<AuthContext.Provider value={memoedValue}>{!initialLoading && children}</AuthContext.Provider>
+		<AuthContext.Provider value={memoedValue}>
+			{initialLoading ? (
+				<div className='flex h-screen w-screen items-center justify-center bg-black'>
+					<Loader color='fill-red-600' />
+				</div>
+			) : (
+				children
+			)}
+		</AuthContext.Provider>
 	);
 };
 
