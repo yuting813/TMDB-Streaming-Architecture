@@ -17,7 +17,7 @@ Firestore queries can only be initiated after the Firebase Auth state is confirm
 
 **Design Decision**: Implemented a strict early-return chain in `pages/index.tsx`, where each layer focuses exclusively on a single defensive boundary:
 
-```typescript
+```tsx
 // Layer 1 — Loading Guard: Full-screen Spinner if any data source is loading
 if (authLoading || subscriptionLoading) return <Loader />;
 
@@ -45,9 +45,9 @@ Firebase authentication relies on asynchronous callbacks. Before the SDK confirm
 
 **Design Decision**: Implemented a robust `initialLoading` timing lock within `useAuth`. Children rendering is forcibly intercepted until the first `onAuthStateChanged` callback confirmation is received:
 
-```typescript
+```tsx
 <AuthContext.Provider value={memoedValue}>
-  {initialLoading ? <Loader /> : children}
+	{initialLoading ? <Loader /> : children}
 </AuthContext.Provider>
 ```
 
@@ -59,7 +59,7 @@ Direct usage of native `fetch()` within components is strictly prohibited. All n
 
 1. **Request Deduplication (In-flight Cache)**: `getStaticProps` runs 8 requests in parallel, and different routing pages may contain duplicate URLs. Using a module-level `Map<string, Promise>` cache, identical URLs return the exact same Promise instance, blocking duplicate traffic. If the Promise rejects, the cache entry is automatically cleared to allow retries.
 2. **Build Hang Prevention (Timeout)**: An `AbortController` with an 8-second timeout is built-in to prevent unstable TMDB network conditions from causing Next.js builds to hang indefinitely.
-3. **Safe Interruption Aggregation (`mergeAbortSignals`)**: Perfectly unifies "Network Timeout Events" and "Component Unmount Events". Firing an Abort from either side cleanly terminates the underlying `fetch`. After aborting, `removeEventListener` is synchronously executed to clear the listeners of both original signals, completely eradicating React Memory Leaks and dangling asynchronous callbacks.
+3. **Safe Interruption Aggregation (`mergeAbortSignals`)**: Perfectly unifies "Network Timeout Events" and "Component Unmount Events". Firing an Abort from either side cleanly terminates the underlying `fetch`. After aborting, `removeEventListener` is synchronously executed to clear the listeners of both original signals, completely eradicating React Memory Leaks and dangling asynchronous callbacks. (Note: hand-rolled as a Safari polyfill — `AbortSignal.any()` is not supported in older Safari versions.)
 
 ---
 
@@ -69,7 +69,7 @@ When a user rapidly clicks through the movie list, an old `fetch` result might a
 
 **Design Decision**: Integrated the Cancellation Token Pattern, giving asynchronous requests the ability to self-invalidate:
 
-```typescript
+```tsx
 let active = true;
 async function fetchMovie() {
   const data = await tmdbFetch(...);
@@ -85,10 +85,10 @@ return () => { active = false; };
 
 The update frequencies of the movie list and user profile data are vastly different. Forcing them into the same data layer would lead to state decoupling. This project splits the data flow based on its characteristics:
 
-| Track | Mechanism | Trigger Timing | Single Source of Truth (SSOT) |
-| --- | --- | --- | --- |
-| Movie Category Data | Next.js ISR (`getStaticProps` + `revalidate: 3600`) | Build Time + Hourly background increment | TMDB API |
-| User Profile Data | Firestore `onSnapshot` (`useList` / `useSubscription`) | Real-time push on any DB change | Firestore |
+| Track               | Mechanism                                              | Trigger Timing                           | Single Source of Truth (SSOT) |
+| ------------------- | ------------------------------------------------------ | ---------------------------------------- | ----------------------------- |
+| Movie Category Data | Next.js ISR (`getStaticProps` + `revalidate: 3600`)    | Build Time + Hourly background increment | TMDB API                      |
+| User Profile Data   | Firestore `onSnapshot` (`useList` / `useSubscription`) | Real-time push on any DB change          | Firestore                     |
 
 **Design Decision**: For the user's "My List", I abandoned the traditional approach of storing state in Redux/Recoil before asynchronously pushing it to the backend. Instead, Firestore is used directly as the SSOT. The component is only responsible for triggering writes and relies on `onSnapshot` to passively receive changes, completely eliminating the risk of state inconsistency caused by premature UI updates.
 
@@ -99,6 +99,7 @@ The update frequencies of the movie list and user profile data are vastly differ
 ### 6. State Selection: Context vs. Recoil (Decoupling by Data Flow)
 
 - **Auth (React Context)**: Authentication state is a top-of-the-tree dependency with a low mutation frequency. `useAuth` encapsulates the complete Firebase subscription lifecycle and automatic logout timer protection, using `useMemo` to block rendering noise.
+
 - **UI State (Recoil Atom)**: Using Context for Banner, Thumbnail, and Modal would trigger large-scale, unnecessary re-renders. This system uses Recoil atoms as a lightweight Publish/Subscribe event bus, completely decoupling the components—clicking a Thumbnail simply calls `setCurrentMovie(movie)` without any Prop Drilling.
 
   **Write-Side Isolation**: `Thumbnail` utilizes `useSetRecoilState` (pure write setter) instead of `useRecoilState`. Because the Thumbnail only needs to dispatch state and never read it, `useSetRecoilState` ensures that none of the thumbnail components are registered as subscribers to the Recoil atom, completely eradicating the O(N) chain-rendering issue where "clicking any thumbnail causes all thumbnails on the screen to re-render simultaneously". The `Home` page itself also holds no references to `modalState`, ensuring page-level components are fully detached from the UI interaction state subscription chain.
@@ -110,7 +111,7 @@ The update frequencies of the movie list and user profile data are vastly differ
 ```mermaid
 graph TD
     subgraph "Build Time — ISR"
-        A[getStaticProps] -->|Promise.all x8| B["tmdbFetch&lt;T&gt;"]
+        A[getStaticProps] -->|Promise.all x8| B["tmdbFetch&lt;T&gt;()"]
         B -->|revalidate 3600| C[Static HTML + Props]
     end
 
@@ -148,13 +149,31 @@ graph TD
 
 ## Project Structure
 
-```text
+```
 pages/          # Routing entry points (Keep logic minimal, delegate complexity to Hooks)
 components/     # UI Presentation Layer (Does not handle direct API calls)
 hooks/          # Defensive state management logic (useAuth / useSubscription / useList)
 atoms/          # Atomic Recoil state
 utils/          # API forwarding interface and network layer defense implementations
 ```
+
+## Firestore Data Schema
+
+```
+customers/
+  {uid}/
+    subscriptions/
+      {subscriptionId} → { status, current_period_start, current_period_end }
+    myList/
+      {movieId} → { id, title, poster_path, backdrop_path, ... }
+
+products/
+  {productId}/
+    prices/
+      {priceId} → { unit_amount, currency, interval }
+```
+
+> **Security Rule**: `customers/{uid}` and its sub-collections (`subscriptions`, `checkout_sessions`, `payments`) are restricted to `request.auth.uid == uid`. `products/**` is publicly readable (`if true`) since it contains only plan metadata. Write access to subscription records is reserved for the Stripe Firebase Extension webhook — no client-side write is permitted.
 
 ---
 
@@ -166,7 +185,7 @@ This project is the physical manifestation of that mindset: the three-state plan
 
 - **Website**: [tinahu.dev](https://www.tinahu.dev/)
 - **GitHub**: [yuting813](https://github.com/yuting813)
-- **Email**: [tinahuu321@gmail.com](mailto:tinahuu321@gmail.com)
+- **Email**: tinahuu321@gmail.com
 
 > **Educational Use Disclaimer**
 > This project is solely for personal technical demonstration and educational purposes. It is **NOT** a commercial product and is not affiliated with any streaming media service. All movie data is provided by the [TMDB API](https://www.themoviedb.org/).
