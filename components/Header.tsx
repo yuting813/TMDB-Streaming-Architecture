@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { BellIcon, SearchIcon } from '@heroicons/react/solid';
+import { SearchIcon } from '@heroicons/react/solid';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,7 +15,6 @@ const SearchModal = dynamic(() => import('./SearchModal'), { ssr: false });
 function Header() {
 	const router = useRouter();
 	const [isScrolled, setIsScrolled] = useState(false);
-	const [hasNotifications] = useState(true);
 	const [showAccountMenu, setShowAccountMenu] = useState(false);
 	const { logout, user } = useAuth();
 	const { subscription } = useSubscription(user ?? null);
@@ -100,29 +99,6 @@ function Header() {
 					<SearchIcon className='h-7 w-7' />
 				</button>
 				<SearchModal open={showSearchModal} onClose={() => setShowSearchModal(false)} />
-
-				<button aria-label='Kids' className='iconButton hidden lg:inline-flex' title='Kids section'>
-					<span className='text-base'>Kids</span>
-				</button>
-
-				<button
-					aria-label='Notifications'
-					className='iconButton relative'
-					onClick={() => {
-						if (process.env.NODE_ENV !== 'production') {
-							console.log('Notifications clicked');
-						}
-					}}
-					title='View notifications'
-				>
-					<BellIcon className='h-6 w-6' />
-					{hasNotifications && (
-						<span
-							className='absolute -right-0 -top-0 inline-flex h-3 w-3 items-center justify-center rounded-full bg-red-600'
-							aria-hidden='true'
-						/>
-					)}
-				</button>
 
 				<div className='relative pl-2'>
 					<button
