@@ -185,7 +185,7 @@ This project is the physical manifestation of that mindset: the three-state plan
 
 - **Website**: [tinahu.dev](https://www.tinahu.dev/)
 - **GitHub**: [yuting813](https://github.com/yuting813)
-- **Email**: tinahuu321@gmail.com
+- **Email**: [tinahuu321@gmail.com](mailto:tinahuu321@gmail.com)
 
 > **Educational Use Disclaimer**
 > This project is solely for personal technical demonstration and educational purposes. It is **NOT** a commercial product and is not affiliated with any streaming media service. All movie data is provided by the [TMDB API](https://www.themoviedb.org/).
