@@ -19,6 +19,10 @@
 			]
 		}
 	],
+	"firestore": {
+		"rules": "firestore.rules",
+		"indexes": "firestore.indexes.json"
+	},
 	"extensions": {
 		"firestore-stripe-payments": "stripe/firestore-stripe-payments@0.3.4"
 	},

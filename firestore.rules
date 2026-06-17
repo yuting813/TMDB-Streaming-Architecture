@@ -13,6 +13,9 @@ service cloud.firestore {
       match /payments/{id} {
         allow read: if request.auth.uid == uid;
       }
+      match /myList/{id} {
+        allow read, write: if request.auth.uid == uid;
+      }
     }
 
     match /products/{id} {
