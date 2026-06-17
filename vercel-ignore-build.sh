@@ -10,7 +10,10 @@ if [ -z "$PREV" ] || [ -z "$CURR" ]; then
   exit 1
 fi
 
-CHANGED="$(git diff --name-only "$PREV" "$CURR")"
+if ! CHANGED="$(git diff --name-only "$PREV" "$CURR" 2>/dev/null)"; then
+  echo "Git diff failed (perhaps previous SHA is invalid or not in clone history); building."
+  exit 1
+fi
 echo "Changed files:"
 echo "$CHANGED"
 
