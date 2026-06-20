@@ -157,8 +157,9 @@ atoms/          # Atomic Recoil state
 utils/          # API forwarding interface and network layer defense implementations
 ```
 
-## Firestore Data Schema
+## Firestore Data Schema and Security Rules
 
+### 1. Data Schema
 ```
 customers/
   {uid}/
@@ -173,7 +174,12 @@ products/
       {priceId} → { unit_amount, currency, interval }
 ```
 
-> **Security Rule**: `customers/{uid}` and its sub-collections (`subscriptions`, `checkout_sessions`, `payments`) are restricted to `request.auth.uid == uid`. `products/**` is publicly readable (`if true`) since it contains only plan metadata. Write access to subscription records is reserved for the Stripe Firebase Extension webhook — no client-side write is permitted.
+### 2. Security Rules Design
+This project configures read/write permissions based on functional requirements:
+
+* **User Data Isolation**: `customers/{uid}` and its sub-collections are restricted to `request.auth.uid == uid`, ensuring only the authenticated owner can access their personal data.
+* **Sensitive Data Read-Only**: User subscription (`subscriptions`) and payment (`payments`) records are set to **read-only** (`allow read`) on the client side. State updates must be processed securely on the backend via the Stripe Webhook (Stripe Firebase Extension), preventing client-side data tampering.
+* **Public Catalog Read-Only**: Product metadata (`products/**`) is set to public read-only (`allow read: if true`), with write access strictly prohibited for all clients.
 
 ---
 
