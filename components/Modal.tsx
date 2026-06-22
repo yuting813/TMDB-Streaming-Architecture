@@ -253,7 +253,11 @@ function Modal() {
 			onClose={handleClose}
 			className='fixed !top-7 left-0 right-0 z-50 mx-auto w-full max-w-5xl overflow-hidden overflow-y-scroll rounded-md scrollbar-hide'
 		>
-			<div ref={modalRef} tabIndex={-1}>
+			<div
+				ref={modalRef}
+				tabIndex={-1}
+				className='relative overflow-hidden rounded-xl bg-[#181818] outline-none'
+			>
 				<Toaster position='bottom-center' />
 
 				{/* Close Button */}
@@ -266,7 +270,7 @@ function Modal() {
 				</button>
 
 				{/* Trailer / Loading / Fallback */}
-				<div className='relative bg-black pt-[56.25%]'>
+				<div className='relative bg-[#181818] pt-[54.25%]'>
 					{/* Trailer Available */}
 					{hasTrailer ? (
 						<div className='absolute left-0 top-0 z-0 h-full w-full'>
@@ -326,9 +330,9 @@ function Modal() {
 						</div>
 					)}
 
-					{/* Controls Row（重要：左三右一佈局） */}
-					<div className='absolute bottom-2 z-20 flex w-full items-center justify-between px-4 sm:bottom-10 sm:px-10'>
-						{/* 左側：Play / Add / Like */}
+					{/* Controls Row */}
+					<div className='absolute bottom-2 z-20 flex w-full items-center px-4 sm:bottom-4 sm:px-10'>
+						{/* Play / Add / Like */}
 						<div className='flex items-center space-x-3'>
 							{/* Play */}
 							<button
@@ -366,9 +370,9 @@ function Modal() {
 							</button>
 						</div>
 
-						{/* 右側：Mute（大小一致、靠右） */}
+						{/* Mute — positioned to the left of YouTube's native 更多影片 control */}
 						<button
-							className='modalButton'
+							className='modalButton ml-auto mr-[-30px]'
 							onClick={() => setMuted(!muted)}
 							aria-label={muted ? 'Unmute' : 'Mute'}
 						>
