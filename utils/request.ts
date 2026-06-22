@@ -1,8 +1,6 @@
 // 1. ENV configuration
 //-------------------------------------------------------------
-const ENV_API_KEY =
-	(process.env.NEXT_PUBLIC_TMDB_API_KEY || process.env.NEXT_PUBLIC_API_KEY || '').trim() ||
-	undefined;
+const ENV_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY?.trim() || undefined;
 
 const BASE_URL = 'https://api.themoviedb.org/3';
 
