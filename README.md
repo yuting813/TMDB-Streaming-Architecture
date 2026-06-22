@@ -7,6 +7,16 @@ This is not a simple "feature showcase" project. It is an engineering architectu
 - **Live Demo**: [stream.tinahu.dev](https://stream.tinahu.dev/)
 - **Demo Account**: Email `demo@tinahu.dev` / Password `Demo1234!` (Includes Stripe test subscription permissions)
 
+[![Continuous Integration](https://github.com/yuting813/TMDB-Streaming-Architecture/actions/workflows/ci.yml/badge.svg)](https://github.com/yuting813/TMDB-Streaming-Architecture/actions)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+![Firebase](https://img.shields.io/badge/Firebase-Firestore%20%7C%20Auth-orange?logo=firebase)
+![Recoil](https://img.shields.io/badge/State-Recoil-purple)
+![Stripe](https://img.shields.io/badge/Payment-Stripe-635BFF?logo=stripe)
+![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=github-actions)
+
+![Homepage Screenshot](docs/screenshot-home.png)
+
 ---
 
 ## Core Architecture & Engineering Decisions
@@ -160,6 +170,7 @@ utils/          # API forwarding interface and network layer defense implementat
 ## Firestore Data Schema and Security Rules
 
 ### 1. Data Schema
+
 ```
 customers/
   {uid}/
@@ -175,11 +186,12 @@ products/
 ```
 
 ### 2. Security Rules Design
+
 This project configures read/write permissions based on functional requirements:
 
-* **User Data Isolation**: `customers/{uid}` and its sub-collections are restricted to `request.auth.uid == uid`, ensuring only the authenticated owner can access their personal data.
-* **Sensitive Data Read-Only**: User subscription (`subscriptions`) and payment (`payments`) records are set to **read-only** (`allow read`) on the client side. State updates must be processed securely on the backend via the Stripe Webhook (Stripe Firebase Extension), preventing client-side data tampering.
-* **Public Catalog Read-Only**: Product metadata (`products/**`) is set to public read-only (`allow read: if true`), with write access strictly prohibited for all clients.
+- **User Data Isolation**: `customers/{uid}` and its sub-collections are restricted to `request.auth.uid == uid`, ensuring only the authenticated owner can access their personal data.
+- **Sensitive Data Read-Only**: User subscription (`subscriptions`) and payment (`payments`) records are set to **read-only** (`allow read`) on the client side. State updates must be processed securely on the backend via the Stripe Webhook (Stripe Firebase Extension), preventing client-side data tampering.
+- **Public Catalog Read-Only**: Product metadata (`products/**`) is set to public read-only (`allow read: if true`), with write access strictly prohibited for all clients.
 
 ---
 
