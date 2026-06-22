@@ -53,6 +53,8 @@ jobs:
       - name: Build application
         run: npm run build
         env:
+          # 關閉 Next.js Telemetry，避免 build 時回傳數據給 Vercel，確保 CI 環境純淨
+          NEXT_TELEMETRY_DISABLED: 1
           NEXT_PUBLIC_IS_CI: "true"
           NEXT_PUBLIC_TMDB_API_KEY: "mock-tmdb-key"
           NEXT_PUBLIC_API_KEY: "mock-tmdb-key"
