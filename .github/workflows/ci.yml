@@ -1,0 +1,66 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Concurrency 並行控制：同一個 PR 若有新的 commit 推送，自動取消舊的執行任務，節省 CI 資源
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Next.js 專屬 Build Cache：大幅減少 Webpack / SWC 的冷啟動編譯時間
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript typecheck
+        run: npx tsc --noEmit
+
+      # 防禦性測試執行：確保非互動模式，並限制虛擬機資源消耗防 OOM
+      - name: Run unit tests
+        run: npm run test -- --ci --maxWorkers=2
+
+      # Build 階段注入 CI 專屬環境變數，配合程式碼層級的 Firebase 攔截 (firebase.ts)
+      - name: Build application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_IS_CI: "true"
+          NEXT_PUBLIC_TMDB_API_KEY: "mock-tmdb-key"
+          NEXT_PUBLIC_API_KEY: "mock-tmdb-key"
+          NEXT_PUBLIC_FIREBASE_API_KEY: "mock-firebase-key"
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "mock.firebaseapp.com"
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: "mock-project-id"
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "mock-project-id.appspot.com"
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
+          NEXT_PUBLIC_FIREBASE_APP_ID: "1:000000000000:web:mock"
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_mock"
+          STRIPE_SECRET_KEY: "sk_test_mock"
