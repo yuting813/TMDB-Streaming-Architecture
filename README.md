@@ -7,6 +7,16 @@ This is not a simple "feature showcase" project. It is an engineering architectu
 - **Live Demo**: [stream.tinahu.dev](https://stream.tinahu.dev/)
 - **Demo Account**: Email `demo@tinahu.dev` / Password `Demo1234!` (Includes Stripe test subscription permissions)
 
+[![Continuous Integration](https://github.com/yuting813/TMDB-Streaming-Architecture/actions/workflows/ci.yml/badge.svg)](https://github.com/yuting813/TMDB-Streaming-Architecture/actions)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+![Firebase](https://img.shields.io/badge/Firebase-Firestore%20%7C%20Auth-orange?logo=firebase)
+![Recoil](https://img.shields.io/badge/State-Recoil-purple)
+![Stripe](https://img.shields.io/badge/Payment-Stripe-635BFF?logo=stripe)
+![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=github-actions)
+
+![Homepage Screenshot](docs/screenshot-home.png)
+
 ---
 
 ## Core Architecture & Engineering Decisions
