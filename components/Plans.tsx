@@ -53,19 +53,20 @@ const Plans = ({ products }: Props) => {
 							src='/logo.svg'
 							width={40}
 							height={40}
-							className='absolute left-4 top-4  cursor-pointer object-contain md:left-10 md:top-6 '
+							style={{ height: 'auto' }}
+							className='absolute left-4 top-4 cursor-pointer object-contain md:left-10 md:top-6'
 							alt='logo'
 							priority
 						/>
 					</div>
 				</Link>
-				<button onClick={logout} className='text-lg font-medium hover:underline '>
+				<button onClick={logout} className='text-lg font-medium hover:underline'>
 					Sign out
 				</button>
 			</header>
 
-			<main className='pt-28 px-5 mx-auto max-w-5xl pb-12 transition-all'>
-				<h1 className='mb-3 text-3xl font-medium  '>Choose the plan that is right for you</h1>
+			<main className='mx-auto max-w-5xl px-5 pb-12 pt-28 transition-all'>
+				<h1 className='mb-3 text-3xl font-medium'>Choose the plan that is right for you</h1>
 				<ul>
 					<li className='flex items-center gap-x-2 text-lg'>
 						<CheckIcon className='h-7 w-7 text-[#E50914]' /> Watch all you want. Ad-free.
@@ -79,24 +80,19 @@ const Plans = ({ products }: Props) => {
 				</ul>
 
 				<div className='mt-4 flex flex-col space-y-4'>
-					<div className='flex w-full items-center justify-center self-end md:w-3/5 relative'>
+					<div className='relative flex w-full items-center justify-center self-end md:w-3/5'>
 						{products.map((product) => (
 							<div
 								key={product.id}
-								className={`planBox relative ${selectedPlan?.id === product.id ? 'opacity-100' : 'opacity-60'
-									} cursor-pointer  transition-opacity duration-200`}
+								className={`planBox relative ${
+									selectedPlan?.id === product.id ? 'opacity-100' : 'opacity-60'
+								} cursor-pointer transition-opacity duration-200`}
 								onClick={() => setSelectedPlan(product)}
 							>
 								{product.name}
 
 								{product.name === 'Premium' && (
-									<span
-										className='absolute -top-4
-										left-1/2 transform -translate-x-1/2 
-									 bg-gradient-to-r from-purple-600 to-blue-500 
-									 text-white text-sm font-medium px-4 py-1.5  
-									 shadow-lg whitespace-nowrap '
-									>
+									<span className='absolute -top-4 left-1/2 -translate-x-1/2 transform whitespace-nowrap bg-gradient-to-r from-purple-600 to-blue-500 px-4 py-1.5 text-sm font-medium text-white shadow-lg'>
 										Most Popular
 									</span>
 								)}
@@ -111,7 +107,7 @@ const Plans = ({ products }: Props) => {
 					/>
 					<button
 						disabled={!selectedPlan?.price?.[0]?.id || isBillingLoading}
-						className='mx-auto w-11/12 bg-[#E50914] rounded py-4 text-xl shadow hover:bg-[#f6121d] md:w-[420px]'
+						className='mx-auto w-11/12 rounded bg-[#E50914] py-4 text-xl shadow hover:bg-[#f6121d] md:w-[420px]'
 						onClick={subscribeToPlan}
 					>
 						{isBillingLoading ? <Loader color='dark:fill-gray-300' /> : 'Subscribe'}

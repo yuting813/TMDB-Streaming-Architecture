@@ -116,7 +116,12 @@ const Home = ({
 				<Banner streamOriginals={streamOriginals} />
 
 				<section className='md:space-y-10'>
-					<Row title='Trending Now' movies={trendingNow} orientation='poster' />
+					<Row
+						title='Trending Now'
+						movies={trendingNow}
+						orientation='poster'
+						isPriorityRow={true}
+					/>
 					<Row title='Comedies' movies={comedyMovies} orientation='poster' />
 					{/* My List */}
 					{list.length > 0 && <Row title='My List' movies={list} orientation='poster' />}

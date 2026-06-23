@@ -9,9 +9,10 @@ interface Props {
 	movies: Movie[] | DocumentData[];
 	/** 'backdrop' (default) shows wide images; 'poster' shows vertical posters */
 	orientation?: 'backdrop' | 'poster';
+	isPriorityRow?: boolean;
 }
 
-function Row({ title, movies, orientation = 'backdrop' }: Props) {
+function Row({ title, movies, orientation = 'backdrop', isPriorityRow = false }: Props) {
 	const rowRef = useRef<HTMLDivElement>(null);
 	const [isMoved, setIsMoved] = useState(false);
 
@@ -52,8 +53,13 @@ function Row({ title, movies, orientation = 'backdrop' }: Props) {
 					aria-label={`${title} row`}
 				>
 					{movies && movies.length > 0
-						? movies.map((movie) => (
-								<Thumbnail key={movie.id} movie={movie} orientation={orientation} />
+						? movies.map((movie, index) => (
+								<Thumbnail
+									key={movie.id}
+									movie={movie}
+									orientation={orientation}
+									priority={isPriorityRow && index < 4}
+								/>
 							))
 						: // Show simple skeleton placeholders when there are no movies or data is loading/error
 							Array.from({ length: 6 }).map((_, i) => (

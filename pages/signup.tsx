@@ -58,6 +58,7 @@ function Signup() {
 				src='/logo.svg'
 				width={75}
 				height={75}
+				style={{ height: 'auto' }}
 				className='absolute left-4 top-14 cursor-pointer object-contain md:left-10 md:top-16'
 				alt='logo'
 				priority

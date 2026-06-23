@@ -42,6 +42,7 @@ function Header() {
 						src='/logo.svg'
 						width={40}
 						height={40}
+						style={{ height: 'auto' }}
 						className='cursor-pointer object-contain'
 						alt='Stream logo'
 					/>
