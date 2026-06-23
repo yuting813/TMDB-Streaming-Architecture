@@ -49,14 +49,10 @@ const Plans = ({ products }: Props) => {
 			<header className='border-b border-white/10 bg-[#141414]'>
 				<Link href='/'>
 					<div>
-						<Image
+						<img
 							src='/logo.svg'
-							width={40}
-							height={40}
-							style={{ height: 'auto' }}
-							className='absolute left-4 top-4 cursor-pointer object-contain md:left-10 md:top-6'
 							alt='logo'
-							priority
+							className='absolute left-4 top-4 h-[40px] w-[40px] cursor-pointer object-contain md:left-10 md:top-6'
 						/>
 					</div>
 				</Link>

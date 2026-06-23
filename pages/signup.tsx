@@ -54,15 +54,10 @@ function Signup() {
 				quality={75}
 			/>
 
-			<Image
+			<img
 				src='/logo.svg'
-				width={75}
-				height={75}
-				style={{ height: 'auto' }}
-				className='absolute left-4 top-14 cursor-pointer object-contain md:left-10 md:top-16'
 				alt='logo'
-				priority
-				sizes='75px'
+				className='absolute left-4 top-14 h-[75px] w-[75px] cursor-pointer object-contain md:left-10 md:top-16'
 			/>
 			<div className='mt-28 flex w-full flex-grow flex-col items-center justify-center px-4 md:mt-0'>
 				<AuthForm
