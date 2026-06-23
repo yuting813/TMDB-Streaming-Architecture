@@ -10,9 +10,15 @@ interface Props {
 	orientation?: 'backdrop' | 'poster';
 	// when true, make poster thumbnails taller on large screens (used by search page)
 	tallOnLarge?: boolean;
+	priority?: boolean;
 }
 
-function Thumbnail({ movie, orientation = 'backdrop', tallOnLarge = false }: Props) {
+function Thumbnail({
+	movie,
+	orientation = 'backdrop',
+	tallOnLarge = false,
+	priority = false,
+}: Props) {
 	// We only need to set the state, not read it.
 	// using useSetRecoilState prevents all Thumbnails from re-rendering when the state changes!
 	const setShowModal = useSetRecoilState(modalState);
@@ -57,6 +63,7 @@ function Thumbnail({ movie, orientation = 'backdrop', tallOnLarge = false }: Pro
 				alt={movie.title || movie.name || 'Movie poster'}
 				className={`rounded-sm object-cover transition-opacity duration-300 md:rounded ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
 				fill={true}
+				priority={priority}
 				sizes={
 					orientation === 'poster'
 						? '(max-width: 768px) 40vw, (max-width: 1200px) 20vw, 12vw'

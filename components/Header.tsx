@@ -38,12 +38,10 @@ function Header() {
 		<header className={`${isScrolled ? 'bg-[#141414]' : 'bg-black/10'}`}>
 			<div className='flex items-center space-x-2 md:space-x-6'>
 				<Link href='/' aria-label='Go to homepage'>
-					<Image
+					<img
 						src='/logo.svg'
-						width={40}
-						height={40}
-						className='cursor-pointer object-contain'
 						alt='Stream logo'
+						className='h-[40px] w-[40px] cursor-pointer object-contain'
 					/>
 				</Link>
 
