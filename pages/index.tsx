@@ -2,7 +2,6 @@ import { Product } from '@invertase/firestore-stripe-payments';
 import { collection, doc, getDocs, setDoc } from 'firebase/firestore';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useRecoilValue } from 'recoil';
 import { useEffect } from 'react';
 import Banner from '@/components/Banner';
 import Footer from '@/components/Footer';

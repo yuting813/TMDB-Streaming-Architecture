@@ -1,7 +1,6 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import AuthForm from '@/components/AuthForm';
 import Footer from '@/components/Footer';
