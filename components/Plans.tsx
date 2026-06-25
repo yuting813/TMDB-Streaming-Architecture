@@ -1,7 +1,6 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import { Product } from '@invertase/firestore-stripe-payments';
 import Head from 'next/head';
-import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import useAuth from '@/hooks/useAuth';

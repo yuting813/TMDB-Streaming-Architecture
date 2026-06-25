@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { SearchIcon } from '@heroicons/react/solid';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
