@@ -34,13 +34,13 @@ function Login() {
 	return (
 		<div className='relative flex h-screen w-screen flex-col bg-black md:items-center md:justify-center md:bg-transparent'>
 			<Head>
-				<title>Stream Demo - Portfolio Project by Tina Hu</title>
+				<title>Stream - Reference Implementation by Tina Hu</title>
 			</Head>
 
-			{/* Portfolio Disclaimer Banner */}
+			{/* Educational Disclaimer Banner */}
 			<div className='fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-black/80 px-4 py-3 text-center text-xs font-light tracking-wide text-gray-300 shadow-lg backdrop-blur-sm md:text-sm'>
 				<span className='hidden sm:inline'>This is a </span>
-				<span className='font-bold text-white'>Portfolio Demo</span>
+				<span className='font-bold text-white'>Reference Showcase</span>
 				{' — '}
 				<span className='block sm:inline'>
 					NOT affiliated with Netflix
