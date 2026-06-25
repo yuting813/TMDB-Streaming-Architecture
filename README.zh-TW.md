@@ -1,11 +1,11 @@
 [English](README.md) | [繁體中文](README.zh-TW.md)
 
-# TMDB Streaming Architecture — Frontend Engineering Portfolio
+# TMDB Streaming Architecture — 穩健生產級前端參考實作
 
-這不是一個單純的「功能展示」專案。它是一個針對「非同步狀態依賴鏈」與「邊界極端情境（Edge Cases）」的工程架構驗證：展示如何在 **Firebase Auth（身份狀態）**、**Stripe（金流訂閱）** 與 **TMDB（靜態資料）** 這三條非同步資料流之間，設計出 **可預測、防呆且具備高度防禦性（Defensive Design）** 的狀態管理系統。
+本專案為串流媒體前端架構的**技術參考實作**，專注於解決**多重非同步資料流的狀態依賴**與**邊界極端情境（Edge Cases）**。本架構展示了如何在 **Firebase Auth（身份認證）**、**Stripe（金流訂閱）** 與 **TMDB（媒體資料）** 之間，建立一個**可預測、高容錯且具備防禦性設計（Defensive Design）**的狀態管理系統。
 
-- **Live Demo**: [stream.tinahu.dev](https://stream.tinahu.dev/)
-- **Demo 帳號**：Email `demo@tinahu.dev` / Password `Demo1234!`（含 Stripe 測試訂閱權限）
+- **線上參考部署**: [stream.tinahu.dev](https://stream.tinahu.dev/)
+- **測試憑證**：Email `demo@tinahu.dev` / Password `Demo1234!`（含 Stripe 測試訂閱權限）
 
 [![Continuous Integration](https://github.com/yuting813/TMDB-Streaming-Architecture/actions/workflows/ci.yml/badge.svg)](https://github.com/yuting813/TMDB-Streaming-Architecture/actions)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
@@ -154,6 +154,8 @@ graph TD
 - **圖片三態狀態機**：每個圖片元件維護三態——載入中（`animate-pulse` Skeleton 防止 CLS）、成功（`opacity-100` 淡入防閃跳）、失敗（本地 fallback 圖片防破圖）。`onError` 同時觸發 `setIsLoaded(true)`，確保 fallback 啟動後 skeleton 即時消失。`Thumbnail.tsx` 與 `Modal.tsx` 均有實作。
 - **不可變的路由白名單**：`Object.freeze(['/login', ...])` 確保 Auth 守衛的判斷基準在執行期不會被任何模組意外篡改。
 - **Jest 單元測試**：聚焦 `useSubscription`，使用 Mock Firestore 測試 6 種邊界狀態機切換：`null user`、`empty list`、`onSnapshot error`、`loading`、`subscription active`、`subscription inactive`，驗證極端情境下的強韌度。
+- **Fast Refresh Recoil 韌性（開發期崩潰防護）**：在 Next.js 開發模式下，Fast Refresh 會重新評估模組，導致 Recoil 拋出致命的重複 Atom Key 錯誤。我們在 `pages/_app.tsx` 中透過配置 `RecoilEnv` 停用開發期的重複檢測，確保熱更新（HMR）時的開發環境穩定性。
+- **SVG 向量圖優化與排版警告消除**：針對靜態 SVG 標誌（如 `/logo.svg`），將 Next.js `<Image>` 重構為原生 `<img>` 標籤。此舉免除了對向量圖進行不必要伺服器端最佳化的開銷，並根除了 Tailwind CSS Preflight 樣式覆蓋引發的瀏覽器主控台 `height: auto` 警告。
 
 ---
 
@@ -193,11 +195,11 @@ products/
 
 ---
 
-## 關於我
+## 作者與工程哲學
 
-過去 6 年的採購職涯，訓練出了對「風險控管」與「極端狀況預判」的高度敏感性。在轉職前端工程師的過程中，我將這份思維轉化為對**防禦性工程設計（Defensive Design）**的追求。
+結合過去在風險管理中對「極端情境預判」的敏感度，我將這份思維帶入軟體開發，專注於**防禦性前端工程**與程式庫韌性。
 
-這個專案正是這種思維的具象化：每一個元件的三態規劃、每一條 AbortSignal 的中斷邏輯，以及每一層 Promise 請求的緩存，都體現了我對於「當系統不完美時，我們如何保證 UI 一致性」的深度考量。
+本專案展示了如何將此原則應用於複雜的非同步系統：不論是串流媒體的三態狀態機、與舊版 Safari 相容的 AbortSignal 集中清理，還是多層路由防護鏈，皆力求在底層 API 或網路環境不穩定時，確保使用者體驗與系統狀態的完美一致。
 
 - **Website**: [tinahu.dev](https://www.tinahu.dev/)
 - **GitHub**: [yuting813](https://github.com/yuting813)

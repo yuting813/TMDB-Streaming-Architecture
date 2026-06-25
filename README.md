@@ -1,11 +1,11 @@
 [English](README.md) | [繁體中文](README.zh-TW.md)
 
-# TMDB Streaming Architecture — Frontend Engineering Portfolio
+# TMDB Streaming Architecture — Production-Ready Reference Implementation
 
-This is not a simple "feature showcase" project. It is an engineering architecture proof-of-concept focused on **asynchronous state dependency chains** and **edge cases**. It demonstrates how to design a **predictable, foolproof, and highly defensive** state management system across three asynchronous data streams: **Firebase Auth (Identity)**, **Stripe (Subscription/Payment)**, and **TMDB (Static Data)**.
+This repository is a technical reference implementation of a streaming media frontend architecture, focusing on resolving **asynchronous state dependency chains** and **complex edge cases**. It demonstrates how to design a **predictable, error-resilient, and highly defensive** state management system integrated across three distinct asynchronous streams: **Firebase Auth (Identity)**, **Stripe (Subscription/Payment)**, and **TMDB (Static Media Catalog)**.
 
-- **Live Demo**: [stream.tinahu.dev](https://stream.tinahu.dev/)
-- **Demo Account**: Email `demo@tinahu.dev` / Password `Demo1234!` (Includes Stripe test subscription permissions)
+- **Live Showcase**: [stream.tinahu.dev](https://stream.tinahu.dev/)
+- **Test Credentials**: Email `demo@tinahu.dev` / Password `Demo1234!` (Includes Stripe test subscription permissions)
 
 [![Continuous Integration](https://github.com/yuting813/TMDB-Streaming-Architecture/actions/workflows/ci.yml/badge.svg)](https://github.com/yuting813/TMDB-Streaming-Architecture/actions)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
@@ -154,6 +154,8 @@ graph TD
 - **3-State Image Machine**: Every image component maintains three states—Loading (`animate-pulse` Skeleton to prevent CLS), Success (`opacity-100` fade-in to prevent flashing), and Failure (local fallback image to prevent broken links). `onError` simultaneously triggers `setIsLoaded(true)`, ensuring the skeleton instantly disappears once the fallback initiates. Implemented in both `Thumbnail.tsx` and `Modal.tsx`.
 - **Immutable Route Whitelist**: `Object.freeze(['/login', ...])` ensures that the Auth guard's judgment criteria cannot be accidentally mutated by any module at runtime.
 - **Jest Unit Testing**: Focused on `useSubscription`, utilizing Mock Firestore to test 6 boundary state machine transitions: `null user`, `empty list`, `onSnapshot error`, `loading`, `subscription active`, and `subscription inactive`, validating robustness under extreme scenarios.
+- **Fast Refresh Recoil Resiliency (HMR Crash Defense)**: In Next.js dev mode, Fast Refresh triggers module re-evaluation, which causes Recoil to throw a fatal duplicate atom key error. Bypassed this by programmatically configuring `RecoilEnv` checks in `pages/_app.tsx`, guaranteeing developer environment stability without compromising production performance.
+- **SVG Image Optimization & Layout Warnings**: Replaced Next.js `<Image>` components with standard `<img>` tags for static vector SVGs (e.g., `/logo.svg`). This prevents unnecessary server-side resizing overhead for vector graphics and avoids rendering conflict warnings caused by Tailwind CSS preflight's `height: auto` resets.
 
 ---
 
@@ -195,11 +197,11 @@ This project configures read/write permissions based on functional requirements:
 
 ---
 
-## About Me
+## Author & Engineering Philosophy
 
-My past 6 years in procurement management trained me to have a heightened sensitivity toward "Risk Control" and "Extreme Scenario Anticipation". While transitioning into a Frontend Engineer, I channeled this mindset into a pursuit of **Defensive Design**.
+Drawing from a background in risk management and scenario anticipation, I focus on **Defensive Frontend Engineering** and building highly resilient codebases.
 
-This project is the physical manifestation of that mindset: the three-state planning of every component, the interruption logic of every AbortSignal, and the caching of every layer of Promise requests all reflect my deep consideration for "How do we guarantee UI consistency when the system is imperfect?".
+This reference implementation demonstrates how to apply these risk-mitigation principles to asynchronous web applications—utilizing loading lifecycles for media assets, Safari-compatible stream cancelations, and strict route guarding to protect the user experience against network degradation.
 
 - **Website**: [tinahu.dev](https://www.tinahu.dev/)
 - **GitHub**: [yuting813](https://github.com/yuting813)
