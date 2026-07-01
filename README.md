@@ -23,9 +23,9 @@ This repository is a technical reference implementation of a streaming media fro
 
 ### 1. Guarded Render Chain
 
-Firestore queries can only be initiated after the Firebase Auth state is confirmed—this is a natural waterfall dependency. Using a single complex `if` statement would result in unmaintainable logic.
+In asynchronous data flows (e.g., Firestore queries can only be initiated after the Firebase Auth state is confirmed), using deep nested `if-else` blocks or combining all conditions into a single statement (e.g., `if (auth && sub && !loading)`) results in highly unmaintainable logic.
 
-**Design Decision**: Implemented a strict early-return chain in `pages/index.tsx`, where each layer focuses exclusively on a single defensive boundary:
+**Design Decision**: Discarded nested structures in favor of a strict **Early Return Guard Chain** (Guard Clauses) in `pages/index.tsx`. Each `if` layer acts as an independent security checkpoint, focusing exclusively on a single defensive boundary:
 
 ```tsx
 // Layer 1 — Loading Guard: Full-screen Spinner if any data source is loading
@@ -73,11 +73,11 @@ Direct usage of native `fetch()` within components is strictly prohibited. All n
 
 ---
 
-### 4. Modal Race Condition Defense (Stale Result Cancellation)
+### 4. Modal Race Condition Defense (Stale Response Ignore)
 
 When a user rapidly clicks through the movie list, an old `fetch` result might arrive after a new Modal has already rendered, overwriting the state and causing UI corruption (Race Condition).
 
-**Design Decision**: Integrated the Cancellation Token Pattern, giving asynchronous requests the ability to self-invalidate:
+**Design Decision**: Utilized closure variables to track the component's mount lifecycle. If an old asynchronous result returns after the Modal has closed or switched, the stale payload is actively discarded, preventing React Memory Leak warnings and UI pollution caused by race conditions:
 
 ```tsx
 let active = true;
@@ -152,10 +152,8 @@ graph TD
 ## Edge Case Handling & Quality Assurance
 
 - **3-State Image Machine**: Every image component maintains three states—Loading (`animate-pulse` Skeleton to prevent CLS), Success (`opacity-100` fade-in to prevent flashing), and Failure (local fallback image to prevent broken links). `onError` simultaneously triggers `setIsLoaded(true)`, ensuring the skeleton instantly disappears once the fallback initiates. Implemented in both `Thumbnail.tsx` and `Modal.tsx`.
-- **Immutable Route Whitelist**: `Object.freeze(['/login', ...])` ensures that the Auth guard's judgment criteria cannot be accidentally mutated by any module at runtime.
+- **Immutable Route Whitelist**: `Object.freeze(['/login', ...])` ensures that the Auth guard's judgment criteria cannot be accidentally mutated. As a strict engineering discipline, this preemptively catches accidental mutations during development via TypeErrors, favoring "foolproofing" in our defensive design.
 - **Jest Unit Testing**: Focused on `useSubscription`, utilizing Mock Firestore to test 6 boundary state machine transitions: `null user`, `empty list`, `onSnapshot error`, `loading`, `subscription active`, and `subscription inactive`, validating robustness under extreme scenarios.
-- **Fast Refresh Recoil Resiliency (HMR Crash Defense)**: In Next.js dev mode, Fast Refresh triggers module re-evaluation, which causes Recoil to throw a fatal duplicate atom key error. Bypassed this by programmatically configuring `RecoilEnv` checks in `pages/_app.tsx`, guaranteeing developer environment stability without compromising production performance.
-- **SVG Image Optimization & Layout Warnings**: Replaced Next.js `<Image>` components with standard `<img>` tags for static vector SVGs (e.g., `/logo.svg`). This prevents unnecessary server-side resizing overhead for vector graphics and avoids rendering conflict warnings caused by Tailwind CSS preflight's `height: auto` resets.
 
 ---
 
